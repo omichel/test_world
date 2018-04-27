@@ -65,6 +65,7 @@ private:
   void terminate_participant();
 
   void update_label();
+  void show_final_score_label();
 
   // game state control functions
   void step(std::size_t ms); // throw webots_revert_exception when webots reverts
@@ -92,6 +93,8 @@ private:
   void on_set_speed(autobahn::wamp_invocation invocation);
   void on_commentate(autobahn::wamp_invocation invocation);
   void on_report(autobahn::wamp_invocation invocation);
+
+  void extract_team_id(const std::string &executable, const size_t team);
 
 private:
   supervisor& sv_;
@@ -187,6 +190,8 @@ private:
 
   std::promise<void> bootup_promise_;
   std::promise<void> ready_promise_;
+
+  std::size_t team_id_[2];
 };
 
 #endif // H_GAME_HPP

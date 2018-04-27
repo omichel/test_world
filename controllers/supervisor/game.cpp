@@ -2,6 +2,7 @@
 // Maintainer:        Chansol Hong (cshong@rit.kaist.ac.kr)
 
 #include "game.hpp"
+#include "record_result.h"
 
 #include <boost/format.hpp>
 #include <boost/random/random_device.hpp>
@@ -41,7 +42,7 @@ static void create_netfilter(std::size_t port, const std::string &filename, std:
   }
   if (ifAddrStruct != NULL)
     freeifaddrs(ifAddrStruct);
-  
+
   std::ofstream file(filename);
   if (!file.is_open())
     throw std::runtime_error("Could not write 'player.net' firejail netfiler.");
@@ -123,6 +124,9 @@ game::game(supervisor& sv, std::size_t rs_port, std::string uds_path)
   for(auto& fc : foul_oga_counter_) {
     fc.set_capacity(c::FOUL_GA_DURATION_MS / c::PERIOD_MS);
   }
+
+  team_id_[0] = 0;
+  team_id_[1] = 0;
 }
 
 void game::run()
@@ -137,7 +141,7 @@ void game::run()
   work_ = std::make_unique<boost::asio::io_service::work>(io_);
   io_thread_ = std::thread([&]() { io_.run(); });
 
-  // laucnh publish thread
+  // launch publish thread
   publish_thread_ = std::thread([&]() noexcept {
       for(;;) {
         std::unique_lock<std::mutex> lck(events_mutex_);
@@ -232,6 +236,8 @@ void game::run()
                                                 );
 
     assert(ret.second);
+
+    extract_team_id(exe, team);
 
     std::cout << ((team == T_RED) ? "Team A: " : "Team B: ") << std::endl;
     std::cout << "  team name - " << name << std::endl;
@@ -538,6 +544,15 @@ void game::update_label()
                  0, "Arial" // transparency, font
                  );
   }
+}
+
+void game::show_final_score_label() {
+  sv_.setLabel(comments_.size() + 1,
+               (boost::format("FINAL SCORE %d:%d") % score_[0] % score_[1]).str(),
+               0.32, 0.4, // x, y
+               0.12, 0x00000000, // size, color
+               0, "Arial" // transparency, font
+               );
 }
 
 // game state control functions
@@ -962,10 +977,13 @@ void game::run_game()
 
     // special case: game ended. finish the game without checking game rules.
     if(time_ms_ >= game_time_ms_) {
+      show_final_score_label();
       publish_current_frame(c::GAME_END);
       pause();
       stop_robots();
       step(c::WAIT_END_MS);
+      // send the game result to the server to update the rankings
+      notify_game_result(team_id_, score_);
       return;
     }
 
@@ -1305,4 +1323,13 @@ void game::on_report(autobahn::wamp_invocation invocation)
   // we will handle this report internally.
 
   invocation->empty_result();
+}
+
+void game::extract_team_id(const std::string &executable, const size_t team) {
+  std::vector<std::string> details;
+  boost::split(details, executable, boost::is_any_of("/"));
+  if (details.size() >= 2)
+    team_id_[team] = atoi(details[1].c_str());
+  if (team_id_[team] == 0)
+    fprintf(stderr, "Error: id for team %s is invalid.\n", (team == T_RED ? "A" : "B"));
 }
