@@ -520,10 +520,10 @@ void game::terminate_participant()
   }
 }
 
-void game::update_label()
+void game::update_label(bool force_update)
 {
   static int previous_update_time = 0;
-  if (time_ms_ - previous_update_time < 300)
+  if (!force_update && time_ms_ - previous_update_time < 300)
     return;
   previous_update_time = time_ms_;
   sv_.setLabel(0,
@@ -997,7 +997,7 @@ void game::run_game()
       const auto ball_y = std::get<1>(sv_.get_ball_position());
       if((std::abs(ball_x) > c::FIELD_LENGTH / 2) && (std::abs(ball_y) < c::GOAL_WIDTH /2)) {
         ++score_[(ball_x > 0) ? T_RED : T_BLUE];
-        update_label();
+        update_label(true);
 
         // stop all and wait for c::WAIT_GOAL seconds
         pause();

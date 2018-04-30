@@ -64,7 +64,7 @@ private:
   void run_participant();
   void terminate_participant();
 
-  void update_label();
+  void update_label(bool force_update = false);
   void show_final_score_label();
 
   // game state control functions
