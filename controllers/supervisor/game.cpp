@@ -52,7 +52,7 @@ static void create_netfilter(std::size_t port, const std::string &filename, std:
   file << ":OUTPUT DROP [0:0]\n\n";
   file << "-I INPUT -p tcp -s " << ip << " --sport " << std::to_string(port) << " -j ACCEPT\n";
   file << "-I OUTPUT -p tcp -d "<< ip << " --dport " << std::to_string(port) << " -j ACCEPT\n\n";
-  file << "COMMIT";
+  file << "COMMIT\n";
   file.close();
 }
 #endif
@@ -528,7 +528,7 @@ void game::update_label(bool force_update)
   previous_update_time = time_ms_;
   sv_.setLabel(0,
                (boost::format("score %d:%d, time %.2f") % score_[0] % score_[1] % (time_ms_ / 1000.)).str(),
-               0.32, 0.95, // x, y
+               0.4, 0.95, // x, y
                0.10, 0x00000000, // size, color
                0, "Arial" // transparency, font
                );
@@ -549,7 +549,7 @@ void game::update_label(bool force_update)
 void game::show_final_score_label() {
   sv_.setLabel(comments_.size() + 1,
                (boost::format("FINAL SCORE %d:%d") % score_[0] % score_[1]).str(),
-               0.32, 0.4, // x, y
+               0.4, 0.4, // x, y
                0.12, 0x00000000, // size, color
                0, "Arial" // transparency, font
                );
