@@ -52,7 +52,7 @@ static inline void notify_game_result(const size_t *team_id, const std::array<st
   snprintf(command, 1024,
            "wget -qO- "
            "--post-data=\"user1Id=%zu&user2Id=%zu&key=%s\" "
-           "%s/aiwc/test/record.php",
+           "%s/aiwc/record.php",
           team_id[0], team_id[1], key, host);
   file = popen(command, "r");
   if (!file) {

@@ -280,7 +280,7 @@ private: // private member functions
             auto* pn_id_red = pf_patches->getMFNode(0);
             auto* pn_id_blue = pf_patches->getMFNode(1);
 
-            pn_id_red->setVisibility(pn_cams_[N_VIEWPOINT], true);
+            pn_id_red->setVisibility(pn_cams_[N_VIEWPOINT], false);
             pn_id_red->setVisibility(pn_cams_[N_CAMB], false);
             pn_id_blue->setVisibility(pn_cams_[N_VIEWPOINT], false);
             pn_id_blue->setVisibility(pn_cams_[N_CAMA], false);
