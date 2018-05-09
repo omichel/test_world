@@ -346,9 +346,6 @@ void game::run()
       team_id_[2] = config_json["server"]["userId"].GetInt();
   }
 
-  if (save_result_file_)
-    send_result_file(team_id_[2], competition_, result_file_path_);
-
   // initialize promises and futures
   bootup_promise_ = {};
   ready_promise_ = {};
