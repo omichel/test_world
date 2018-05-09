@@ -49,11 +49,10 @@ static inline void send_result_file(size_t user_id, const std::string &competiti
   const int l = 2048;
   char *command = (char *)malloc(l);
   snprintf(command, 2048,
-           "curl %s/save_result_file.php "
+           "curl %s/aiwc/save_result_file.php "
            "-F \"result=@%s\" "
            "-F \"userId=%zu\" -F \"competition=%s\" -F\"key=%s\"",
            host, file_path.c_str(), user_id, competition.c_str(), key);
-  printf("command %s\n", command);
   FILE *file = popen(command, "r");
   if (!file) {
     fprintf(stderr, "Error: cannot run curl.\n");
