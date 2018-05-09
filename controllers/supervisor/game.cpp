@@ -108,6 +108,9 @@ game::game(supervisor& sv, std::size_t rs_port, std::string uds_path)
   : sv_(sv)
   , rs_port_(rs_port)
   , uds_path_(uds_path)
+  , update_ranking_(false)
+  , save_result_file_(false)
+  , competition_("soccer")
 {
   for(auto& fc : foul_pa_counter_) {
     fc.set_capacity(c::FOUL_PA_DURATION_MS / c::PERIOD_MS);
@@ -127,6 +130,7 @@ game::game(supervisor& sv, std::size_t rs_port, std::string uds_path)
 
   team_id_[0] = 0;
   team_id_[1] = 0;
+  team_id_[2] = 0;
 }
 
 void game::run()
@@ -295,6 +299,8 @@ void game::run()
       std::cout << "  team name - " << name << std::endl;
       std::cout << " executable - " << exe << std::endl;
       std::cout << "  data path - " << data << std::endl << std::endl;
+      competition_ = "commentator";
+      result_file_path_ = sv_.getProjectPath() + "/controllers/supervisor/" + data + "/result.txt";
     }
     else
       std::cout << "Commentator \"executable\" is missing: skipping commentator" << std::endl;
@@ -322,12 +328,26 @@ void game::run()
       std::cout << "  team name - " << name << std::endl;
       std::cout << " executable - " << exe << std::endl;
       std::cout << "  data path - " << data << std::endl << std::endl;
+      competition_ = "reporter";
+      result_file_path_ = sv_.getProjectPath() + "/controllers/supervisor/" + data + "/result.txt";
     }
     else
       std::cout << "Reporter \"executable\" is missing: skipping reporter" << std::endl;
   }
   else
     std::cout << "\"reporter\" section of 'config.json' seems to be missing: skipping reporter" << std::endl;
+
+  if (config_json.HasMember("server") && config_json["server"].IsObject()) {
+    if (config_json["server"].HasMember("updateRanking") && config_json["server"]["updateRanking"].IsBool())
+      update_ranking_ = config_json["server"]["updateRanking"].GetBool();
+    if (config_json["server"].HasMember("saveResultFile") && config_json["server"]["saveResultFile"].IsBool())
+      save_result_file_ = config_json["server"]["saveResultFile"].GetBool();
+    if (config_json["server"].HasMember("userId") && config_json["server"]["userId"].IsNumber())
+      team_id_[2] = config_json["server"]["userId"].GetInt();
+  }
+
+  if (save_result_file_)
+    send_result_file(team_id_[2], competition_, result_file_path_);
 
   // initialize promises and futures
   bootup_promise_ = {};
@@ -982,8 +1002,11 @@ void game::run_game()
       pause();
       stop_robots();
       step(c::WAIT_END_MS);
-      // send the game result to the server to update the rankings
-      notify_game_result(team_id_, score_);
+      if (update_ranking_)
+        // send the game result to the server to update the rankings
+        notify_game_result(team_id_, score_);
+      if (save_result_file_)
+        send_result_file(team_id_[2], competition_, result_file_path_);
       return;
     }
 

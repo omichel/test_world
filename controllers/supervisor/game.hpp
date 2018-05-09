@@ -160,6 +160,11 @@ private:
   bool deadlock_flag_;
   bool goal_area_foul_flag_;
   bool penalty_area_foul_flag_;
+  
+  bool update_ranking_;
+  bool save_result_file_;
+  std::string competition_;
+  std::string result_file_path_;
 
   std::size_t time_ms_ = 0;
   std::array<std::size_t, 2> score_ = {{0, 0}};
@@ -191,7 +196,7 @@ private:
   std::promise<void> bootup_promise_;
   std::promise<void> ready_promise_;
 
-  std::size_t team_id_[2];
+  std::size_t team_id_[3]; // 0: teamA, 1: teamB, 2: reporter/commentator
 };
 
 #endif // H_GAME_HPP

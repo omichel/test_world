@@ -60,6 +60,10 @@ public:
     enable_cameras(constants::CAM_PERIOD_MS);
     enable_receiver(constants::RECV_PERIOD_MS);
   }
+  
+  ~supervisor() {
+    simulationSetMode(Supervisor::SIMULATION_MODE_PAUSE);
+  }
 
   const unsigned char* get_image(bool is_red) const
   {
