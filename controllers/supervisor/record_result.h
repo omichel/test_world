@@ -23,7 +23,7 @@ static inline void read_host_key(char *key, size_t key_size, char *host) {
   const char *WEBOTS_HOME = getenv("WEBOTS_HOME");
   n = strlen(WEBOTS_HOME) + 1024;
   char *filename = (char *)malloc(n);
-  snprintf(filename, n, "%s/resources/web/server/key/%s", WEBOTS_HOME, "localhost");
+  snprintf(filename, n, "%s/resources/web/server/key/%s", WEBOTS_HOME, fqdn);
   file = fopen(filename, "r");
   if (!file) {
     fprintf(stderr, "Error: cannot open key file '%s'\n", filename);

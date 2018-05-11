@@ -300,7 +300,7 @@ void game::run()
       std::cout << " executable - " << exe << std::endl;
       std::cout << "  data path - " << data << std::endl << std::endl;
       competition_ = "commentator";
-      result_file_path_ = sv_.getProjectPath() + "/controllers/supervisor/" + data + "/result.txt";
+      result_file_path_ = sv_.getProjectPath() + "/reports/" + name + ".txt";
     }
     else
       std::cout << "Commentator \"executable\" is missing: skipping commentator" << std::endl;
@@ -329,7 +329,7 @@ void game::run()
       std::cout << " executable - " << exe << std::endl;
       std::cout << "  data path - " << data << std::endl << std::endl;
       competition_ = "reporter";
-      result_file_path_ = sv_.getProjectPath() + "/controllers/supervisor/" + data + "/result.txt";
+      result_file_path_ = sv_.getProjectPath() + "/reports/" + name + ".txt";
     }
     else
       std::cout << "Reporter \"executable\" is missing: skipping reporter" << std::endl;
@@ -411,6 +411,8 @@ void game::run()
       rfile << line << std::endl;
     rfile.close();
   }
+  if (save_result_file_)
+    send_result_file(team_id_[2], competition_, result_file_path_);
 
   // stop publishing and wait until publish thread stops
   events_stop_ = true;
@@ -995,15 +997,13 @@ void game::run_game()
     // special case: game ended. finish the game without checking game rules.
     if(time_ms_ >= game_time_ms_) {
       show_final_score_label();
+      if (update_ranking_)
+        // send the game result to the server to update the rankings
+        notify_game_result(team_id_, score_);
       publish_current_frame(c::GAME_END);
       pause();
       stop_robots();
       step(c::WAIT_END_MS);
-      if (update_ranking_)
-        // send the game result to the server to update the rankings
-        notify_game_result(team_id_, score_);
-      if (save_result_file_)
-        send_result_file(team_id_[2], competition_, result_file_path_);
       return;
     }
 
