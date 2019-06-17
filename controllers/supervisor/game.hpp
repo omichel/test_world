@@ -197,6 +197,8 @@ private:
   std::promise<void> ready_promise_;
 
   std::size_t team_id_[3]; // 0: teamA, 1: teamB, 2: reporter/commentator
+  
+  bool record; // whether to record the game or not
 };
 
 #endif // H_GAME_HPP

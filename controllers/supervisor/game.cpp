@@ -12,6 +12,7 @@
 
 #include "rapidjson/document.h"
 #include <fstream>
+#include <time.h>
 
 namespace c = constants;
 namespace bp = boost::process;
@@ -131,6 +132,8 @@ game::game(supervisor& sv, std::size_t rs_port, std::string uds_path)
   team_id_[0] = 0;
   team_id_[1] = 0;
   team_id_[2] = 0;
+  
+  record = false;
 }
 
 void game::run()
@@ -301,6 +304,7 @@ void game::run()
       std::cout << "  data path - " << data << std::endl << std::endl;
       competition_ = "commentator";
       result_file_path_ = sv_.getProjectPath() + "/reports/" + name + ".txt";
+      record = true;
     }
     else
       std::cout << "Commentator \"executable\" is missing: skipping commentator" << std::endl;
@@ -330,6 +334,7 @@ void game::run()
       std::cout << "  data path - " << data << std::endl << std::endl;
       competition_ = "reporter";
       result_file_path_ = sv_.getProjectPath() + "/reports/" + name + ".txt";
+      record = true;
     }
     else
       std::cout << "Reporter \"executable\" is missing: skipping reporter" << std::endl;
@@ -379,6 +384,20 @@ void game::run()
     }
     else {
       try {
+        // Record the game when necessary
+        if (record) {
+          const auto movie_prefix = "/home/aiwc/Videos/";
+          // Get the timestamp
+          time_t rawtime;
+          struct tm *timeinfo;
+          
+          time(&rawtime);
+          timeinfo = localtime(&rawtime);
+          
+          // Start recording the game
+          sv_.movieStartRecording(movie_prefix + std::string("[") + std::to_string(timeinfo->tm_mon + 1) + "-" + std::to_string(timeinfo->tm_mday) + " " + std::to_string(timeinfo->tm_hour) + ":" + std::to_string(timeinfo->tm_min) + ":" + std::to_string(timeinfo->tm_sec) + std::string("]") + std::to_string(team_id_[T_RED]) + "_vs_" + std::to_string(team_id_[T_BLUE]) + "_by_" + std::to_string(team_id_[2]) + ".mp4", 1024, 768, 0, 90, 1, false);
+        }
+        
         std::cout << "Starting a new game" << std::endl;
         run_game();
 
@@ -396,6 +415,11 @@ void game::run()
           if(ti.c.running()) {
             ti.c.terminate();
           }
+        }
+        
+        if (record) {
+          // Stop recording the game
+          sv_.movieStopRecording();
         }
       }
       catch(const webots_revert_exception& e) {

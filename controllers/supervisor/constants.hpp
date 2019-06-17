@@ -102,7 +102,7 @@ namespace constants {
   constexpr double      DEADLOCK_THRESHOLD = 0.4; // m/s
   constexpr double      DEADLOCK_RANGE = 1.5 * (ROBOT_RADIUS + BALL_RADIUS); // robots within this range near the ball are sent off
 
-  constexpr std::size_t NUM_COMMENTS = 5;
+  constexpr std::size_t NUM_COMMENTS = 3;
 
   constexpr std::size_t MSG_MAX_SIZE = 90000; // bytes
 
