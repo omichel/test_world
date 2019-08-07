@@ -114,11 +114,10 @@ class TcpServer:
                 cleanup(s)
 
 
-class GameSupervisor (Supervisor):
-    timeStep = 10
-
+class GameSupervisor(Supervisor):
     def __init__(self):
         Supervisor.__init__(self)
+        self.timeStep = 10
         self.report = None
 
         self.receiver = self.getReceiver(constants.NAME_RECV)
