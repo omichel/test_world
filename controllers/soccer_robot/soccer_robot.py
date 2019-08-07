@@ -29,9 +29,10 @@ class SoccerRobot(Robot):
         return value * (1 + random.uniform(-self.noise, self.noise))
 
 
-noise = 0.0
 if len(sys.argv) > 1:
     noise = float(sys.argv[1])
+else:
+    noise = 0.0
 soccer_robot = SoccerRobot(noise)
 soccer_robot.run()
 exit(0)
