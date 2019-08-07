@@ -31,7 +31,7 @@ class ImageFrameBuffer:
                 # compare
                 for py in range(yStart, ey):
                     if self.oldImage is None or (self.oldImage[xStart][py] == self.oldImage[ex][py] and self.oldImage[xStart][py] == self.currentImage[xStart][py]):
-                        b64_encoded = ""
+                        b64_encoded = ''
                         for py in range(yStart, ey):  # TODO: twice py ?!?
                             for px in range(xStart, ex):
                                 b64_encoded += base64.b64encode(bytes(self.currentImage[px][py])).decode("utf-8")
