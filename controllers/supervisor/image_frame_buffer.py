@@ -29,9 +29,9 @@ class ImageFrameBuffer:
                 # compare
                 for py in range(by, ey):
                     if self.oldImage is None or (self.oldImage[bx][py] == self.oldImage[ex][py] and self.oldImage[bx][py] == self.currentImage[bx][py]):
-                        b64_encoded = []
+                        b64_encoded = ""
                         for py in range(by, ey):  # TODO: twice py ?!?
                             for px in range(bx, ex):
-                                b64_encoded.append(self.currentImage[px][py])  # TODO: encode ?
+                                b64_encoded += base64.b64encode(bytes(self.currentImage[px][py])).decode("utf-8") 
                         ret.append([bx, by, ex - bx, ey - by, b64_encoded])
         return ret
