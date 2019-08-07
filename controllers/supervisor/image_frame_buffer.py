@@ -16,21 +16,22 @@ class ImageFrameBuffer:
 
     def update_image(self):
         ret = []
-        self.oldImage = self.currentImage[:]
+        if self.currentImage is not None:
+            self.oldImage = self.currentImage.copy()
         self.currentImage = self.camera.getImageArray()
         for iy in range(self.subImageWidth):
             for ix in range(self.subImageHeight):
-                bx = ix * (self.width / self.subImageWidth)  # begin x
-                by = iy * (self.height / self.subImageHeight)  # begin y
-                ex = self.width if (ix == self.subImageWidth - 1) else (self.bx + (self.width / self.subImageWidth))
-                ey = self.height if (iy == self.subImageHeight - 1) else (self.by + (self.height / self.subImageHeight))
+                bx = int(ix * (self.width / self.subImageWidth))  # begin x
+                by = int(iy * (self.height / self.subImageHeight))  # begin y
+                ex = self.width if ix == self.subImageWidth - 1 else int(bx + (self.width / self.subImageWidth))
+                ey = self.height if iy == self.subImageHeight - 1 else int(by + (self.height / self.subImageHeight))
 
                 # compare
                 for py in range(by, ey):
-                    if self.oldImage is None or (self.oldImage[bx, py] == self.oldImage[ex, py] and self.oldImage[bx, py] == self.currentImage[bx, py]):
-                        b64_encoded = ""
+                    if self.oldImage is None or (self.oldImage[bx][py] == self.oldImage[ex][py] and self.oldImage[bx][py] == self.currentImage[bx][py]):
+                        b64_encoded = []
                         for py in range(by, ey):  # TODO: twice py ?!?
                             for px in range(bx, ex):
-                                b64_encoded.append(self.currentImage[px, py])  # TODO: encode ?
+                                b64_encoded.append(self.currentImage[px][py])  # TODO: encode ?
                         ret.append([bx, by, ex - bx, ey - by, b64_encoded])
         return ret
