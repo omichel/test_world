@@ -360,7 +360,7 @@ class GameSupervisor (Supervisor):
                 self.robot[t][id]['y'] = position[2]
                 orientation = node.getOrientation()
                 self.robot[t][id]['th'] = orientation[3]
-        self.ball_position = self.ball.getPosition()
+        self.ball_position = self.get_ball_position()
 
     def generate_frame(self, team):
         opponent = constants.TEAM_BLUE if team == constants.TEAM_RED else constants.TEAM_RED
@@ -385,7 +385,7 @@ class GameSupervisor (Supervisor):
                 frame['coordinates'][t][id][4] = self.robot[c][id]['touch']
         frame['coordinates'][2] = [None] * 2
         frame['coordinates'][2][0] = self.ball_position[0]
-        frame['coordinates'][2][1] = self.ball_position[2]
+        frame['coordinates'][2][1] = self.ball_position[1]
         frame['EOF'] = True
         return frame
 
@@ -1049,7 +1049,7 @@ class GameSupervisor (Supervisor):
 
             if self.game_state == Game.STATE_DEFAULT:
                 ball_x = self.ball_position[0]
-                ball_y = self.ball_position[2]
+                ball_y = self.ball_position[1]
                 if abs(ball_x) > constants.FIELD_LENGTH / 2 and abs(ball_y) < constants.GOAL_WIDTH / 2:
                     goaler = constants.TEAM_RED if ball_x > 0 else constants.TEAM_BLUE
                     self.score[goaler] += 1
@@ -1059,8 +1059,10 @@ class GameSupervisor (Supervisor):
                     self.game_state = Game.STATE_KICKOFF
                     self.ball_ownership = constants.TEAM_BLUE if ball_x > 0 else constants.TEAM_RED
                     self.kickoff_time = self.time
-                    self.reset(constants.FORMATION_KICKOFF if self.ball_ownership == constants.TEAM_RED else constants.FORMATION_DEFAULT,
-                               constants.FORMATION_KICKOFF if self.ball_ownership == constants.TEAM_BLUE else constants.FORMATION_DEFAULT)
+                    if self.ball_ownership == constants.TEAM_RED:
+                        self.reset(constants.FORMATION_KICKOFF, constants.FORMATION_DEFAULT)
+                    else:
+                        self.reset(constants.FORMATION_DEFAULT, constants.FORMATION_KICKOFF)
                     self.lock_all_robots(True)
                     self.robot[self.ball_ownership][4]['active'] = True
                     self.step(constants.WAIT_STABLE_MS)
@@ -1196,14 +1198,16 @@ class GameSupervisor (Supervisor):
                                 self.reset(constants.FORMATION_GOALKICK_A, constants.FORMATION_GOALKICK_D)
                                 self.lock_all_robots(True)
                                 self.robot[self.ball_ownership][0]['active'] = True
-                            elif ball_x > 0 and self.ball_ownership == constants.TEAM_BLUE:  # proceed to goal kick by Team Blue
+                            elif ball_x > 0 and self.ball_ownership == constants.TEAM_BLUE:
+                                # proceed to goal kick by Team Blue
                                 self.game_state = Game.STATE_GOALKICK
                                 self.reset_reason = constants.GOALKICK
                                 self.goalkick_time = self.time
                                 self.reset(constants.FORMATION_GOALKICK_D, constants.FORMATION_GOALKICK_A)
                                 self.lock_all_robots(True)
                                 self.robot[self.ball_ownership][0]['active'] = True
-                            elif ball_x < 0 and self.ball_ownership == constants.TEAM_BLUE:  # proceed to penalty kick by Team Blue
+                            elif ball_x < 0 and self.ball_ownership == constants.TEAM_BLUE:
+                                # proceed to penalty kick by Team Blue
                                 self.game_state = Game.STATE_PENALTYKICK
                                 self.reset_reason = constants.PENALTYKICK
                                 self.penaltykick_time = self.time
@@ -1279,7 +1283,7 @@ class GameSupervisor (Supervisor):
                     self.lock_all_robots(False)
                 else:
                     ball_x = self.ball_position[0]
-                    ball_y = self.ball_position[2]
+                    ball_y = self.ball_position[1]
                     if ball_x * ball_x + ball_y * ball_y > constants.KICKOFF_BORDER * constants.KICKOFF_BORDER:
                         self.game_state = Game.STATE_DEFAULT
                         self.lock_all_robots(False)
