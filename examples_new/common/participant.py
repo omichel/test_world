@@ -132,10 +132,11 @@ class Participant():
         self.init(json.loads(info))
 
         self.send('ready')
+        data = ''
         while True:
-            data = self.receive()
-            if data:
-                # data could contain multiple concatenated frames and last one could not be complete
+            data += self.receive()
+            if data and data[-1] == '}':  # make sure we received complete frame
+                # data could contain multiple concatenated frames
                 try:
                     frames = json.loads("[{}]".format(data.replace('}{', '},{')))
                     finished = False
@@ -152,3 +153,4 @@ class Participant():
                         break
                 except ValueError:
                     sys.stderr.write("Error: participant.py: Invalid JSON object.\n")
+                data = ''
