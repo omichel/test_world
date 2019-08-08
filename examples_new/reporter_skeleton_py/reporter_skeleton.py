@@ -7,7 +7,6 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
-    print(sys.path)
     from participant import Participant
 except ImportError as err:
     print('reporter_skeleton: \'participant\' module cannot be imported:', err)
@@ -53,7 +52,7 @@ class Reporter(Participant):
         # self.image = ReceivedImage(self.resolution, self.colorChannels)
 
         self.paragraphs = []
-        print("I am the reporter for this game!")
+        self.printConsole("I am the reporter for this game!")
 
     def update(self, frame):
         # self.printConsole(frame.time)

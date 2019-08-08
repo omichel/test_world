@@ -7,7 +7,6 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
-    print(sys.path)
     from participant import Participant, Game, Frame
 except ImportError as err:
     print('commentator_skeleton: \'participant\' module cannot be imported:', err)
@@ -51,17 +50,17 @@ class Commentator(Participant):
         self.end_of_frame = False
         # TODO self.image = ReceivedImage(self.resolution, self.colorChannels)
 
-        print("I am the commentator for this game!")
+        self.printConsole("I am the commentator for this game!")
 
     def commentate(self, commentary):
         self.send_comment([commentary])
 
     def update(self, received_frame):
-        # print(received_frame.time)
-        # print(received_frame.score)
-        # print(received_frame.reset_reason)
-        # print(received_frame.half_passed)
-        # print(self.end_of_frame)
+        # self.printConsole(received_frame.time)
+        # self.printConsole(received_frame.score)
+        # self.printConsole(received_frame.reset_reason)
+        # self.printConsole(received_frame.half_passed)
+        # self.printConsole(self.end_of_frame)
 
         if (received_frame.reset_reason == Game.GAME_START):
             if not received_frame.half_passed:
