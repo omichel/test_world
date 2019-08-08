@@ -53,7 +53,7 @@ json Player::receive() {
   do {
     char buffer[4096];
     memset(buffer, '\0', sizeof(buffer));
-    int ret = read(mConnFd, (void *)buffer, sizeof(buffer) - 1);
+    read(mConnFd, (void *)buffer, sizeof(buffer) - 1);
     completeBuffer += buffer;
   } while (completeBuffer.back() != '}');
   return json::parse(completeBuffer.c_str());
