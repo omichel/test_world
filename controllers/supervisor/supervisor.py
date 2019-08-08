@@ -362,12 +362,25 @@ class GameSupervisor (Supervisor):
                 self.robot[t][id]['th'] = orientation[3]
         self.ball_position = self.get_ball_position()
 
-    def generate_frame(self, team):
+    def publish_current_frame(self, reset_reason=None):
+        frame_team_red = self.generate_frame(constants.TEAM_RED, reset_reason)  # frame also sent to commentator and reporter
+        frame_team_blue = self.generate_frame(constants.TEAM_BLUE, reset_reason)
+        for role in constants.ROLES:
+            if role in self.role_client:
+                frame = frame_team_blue if role == constants.TEAM_BLUE else frame_team_red
+                self.tcp_server.send(self.role_client[role], json.dumps(frame))
+
+    def generate_frame(self, team, reset_reason=None):
         opponent = constants.TEAM_BLUE if team == constants.TEAM_RED else constants.TEAM_RED
         frame = {}
         frame['time'] = self.getTime()
         frame['score'] = [self.score[team], self.score[opponent]]
-        frame['reset_reason'] = self.reset_reason
+        frame['reset_reason'] = reset_reason if reset_reason else self.reset_reason
+        if team == constants.TEAM_BLUE:
+            if frame['reset_reason'] == constants.SCORE_RED_TEAM:
+                frame['reset_reason'] = Game.SCORE_OPPONENT
+            elif frame['reset_reason'] == constants.SCORE_BLUE_TEAM:
+                frame['reset_reason'] = Game.SCORE_MYTEAM
         frame['game_state'] = self.game_state
         frame['ball_ownership'] = True if self.ball_ownership == team else False
         frame['half_passed'] = self.half_passed
@@ -866,7 +879,7 @@ class GameSupervisor (Supervisor):
         self.kickoff_time = self.time
         self.score = [0, 0]
         self.half_passed = False
-        self.reset_reason = Game.GAME_START
+        self.reset_reason = Game.NONE
         self.game_state = Game.STATE_KICKOFF
         self.ball_ownership = constants.TEAM_RED  # red
         self.robot = [[0 for x in range(constants.NUMBER_OF_ROBOTS)] for y in range(2)]
@@ -926,21 +939,32 @@ class GameSupervisor (Supervisor):
                         self.movieStartRecording(record_fullpath, 1920, 1080, 0, 100, 1, False)
                     print('Starting match.')
                     self.started = True
+                    self.update_positions()
+                    self.publish_current_frame(Game.GAME_START)
                 else:
                     if self.step(self.timeStep) == -1:
                         break
-                    continue
+                continue
 
             self.update_positions()
             if self.time > self.game_time:  # half of game over
                 if self.half_passed:  # game over
                     if repeat:
+                        publish_current_frame(Game.EPISODE_END);
                         self.reset_reason = Game.EPISODE_END
                         self.episode_restart()
+                        self.half_passed = False
                     else:
-                        self.reset_reason = Game.GAME_END
+                        publish_current_frame(Game.GAME_END)
+                    self.stop_robots()
+                    self.step(constants.WAIT_END_MS)
+                    if not repeat:
+                      return
                 else:  # second half starts with a kickoff by the blue team (1)
-                    self.reset_reason = Game.HALFTIME
+                    self.publish_current_frame(Game.HALFTIME)
+                    self.stop_robots()
+                    self.step(constants.WAIT_END_MS)
+                    self.half_passed = True
                     self.mark_half_passed()
                     self.ball_ownership = constants.TEAM_BLUE
                     self.game_state = Game.STATE_KICKOFF
@@ -949,18 +973,13 @@ class GameSupervisor (Supervisor):
                     self.reset(constants.FORMATION_DEFAULT, constants.FORMATION_KICKOFF)
                     self.lock_all_robots(True)
                     self.robot[constants.TEAM_BLUE][4]['active'] = True
-                self.half_passed = not self.half_passed
-                self.stop_robots()
-                self.step(constants.WAIT_END_MS)
+                    self.step(constants.WAIT_STABLE_MS)
+                    self.publish_current_frame(Game.GAME_START)
+                continue
 
-            frame_team_red = self.generate_frame(constants.TEAM_RED)  # frame also sent to commentator and reporter
-            frame_team_blue = self.generate_frame(constants.TEAM_BLUE)
-            for role in constants.ROLES:
-                if role in self.role_client:
-                    frame = frame_team_blue if role == constants.TEAM_BLUE else frame_team_red
-                    self.tcp_server.send(self.role_client[role], json.dumps(frame))
-            if self.reset_reason == Game.GAME_END:
-                return
+            self.publish_current_frame()
+            self.reset_reason = Game.NONE
+
             # if any of the robots has touched the ball at this frame, update self.recent_touch
             touch = self.get_robot_touch_ball()
             for team in constants.TEAMS:
