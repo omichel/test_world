@@ -242,8 +242,8 @@ class GameSupervisor (Supervisor):
                 if role != constants.COMMENTATOR:
                     sys.stderr.write("Error, only commentator can commentate.\n")
                     return
-                start = command.find('",') + 2
-                comment = '[{:.2f}] {}'.format(self.time / 1000., command[start:-1])
+                start = command.find('",') + 4
+                comment = '[{:.2f}] {}'.format(self.time / 1000., command[start:-2])
                 self.comments_.append(comment)
             elif command.startswith('report('):
                 if role != constants.REPORTER:
