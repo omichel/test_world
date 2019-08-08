@@ -8,7 +8,6 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
-    print(sys.path)
     from participant import Participant
 except ImportError as err:
     print('player_random-walk: \'participant\' module cannot be imported:', err)

@@ -111,6 +111,10 @@ class Participant():
     def send_report(self, report):
         self.send('report', report)
 
+    def printConsole(self, message):
+        print(message)
+        sys.__stdout__.flush()
+
     def check_frame(self, frame):  # you should override this method
         if frame.reset_reason == Game.GAME_END:
             return False
