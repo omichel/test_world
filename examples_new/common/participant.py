@@ -63,10 +63,20 @@ class Participant():
             else:  # number
                 message += ', %s' % argument
         message += ')'
-        self.socket.sendall(message.encode())
+        try:
+            self.socket.sendall(message.encode())
+        except socket.error:
+            self.socket.close()
+            exit(0)
 
     def receive(self):
-        data = self.socket.recv(4096)
+        try:
+            data = self.socket.recv(4096)
+        except socket.error:
+            self.socket.close()
+            exit(0)
+        if not data:  # the connection was likely closed because the simulation terminated
+            exit(0)
         return data.decode()
 
     def create_frame_object(self, f):
