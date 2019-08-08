@@ -49,10 +49,14 @@ void Player::sendToServer(std::string message, std::string arguments) {
 }
 
 json Player::receive() {
-  char buffer[4096];
-  memset(buffer, '\0', sizeof(buffer));
-  int ret = read(mConnFd, (void *)buffer, sizeof(buffer) - 1);
-  return json::parse(buffer);
+  std::string completeBuffer;
+  do {
+    char buffer[4096];
+    memset(buffer, '\0', sizeof(buffer));
+    int ret = read(mConnFd, (void *)buffer, sizeof(buffer) - 1);
+    completeBuffer += buffer;
+  } while (completeBuffer.back() != '}');
+  return json::parse(completeBuffer.c_str());
 }
 
 void Player::setSpeeds(std::vector<double> speeds) {
