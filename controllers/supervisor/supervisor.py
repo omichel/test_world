@@ -5,7 +5,6 @@ import math
 import os
 import random
 import select
-import signal
 import socket
 import string
 import subprocess
@@ -906,7 +905,6 @@ class GameSupervisor (Supervisor):
                 command_line.append(player_info['path_prefix'])
                 print(command_line)
                 subprocess.Popen(command_line)
-
         self.started = False
         print('Waiting for player to be ready...')
 
