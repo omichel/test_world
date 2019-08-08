@@ -12,7 +12,6 @@ import helper
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
-    print(sys.path)
     from participant import Participant, Game, Frame
 except ImportError as err:
     print('player_rulebased-B: \'participant\' module cannot be imported:', err)
