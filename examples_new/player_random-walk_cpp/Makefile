@@ -9,6 +9,7 @@ SRC      := player_random-walk.cpp ../common/player.cpp
 OBJECTS := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 all: build $(TARGET)
+	@echo "Done."
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)
