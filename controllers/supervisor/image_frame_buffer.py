@@ -23,8 +23,8 @@ class ImageFrameBuffer:
             return ret
         self.lastUpdateTime = time
         if self.currentImage is not None:
-            self.oldImage = self.currentImage.copy()
-        self.currentImage = self.camera.getImageArray()
+            self.oldImage = self.currentImage
+        self.currentImage = self.camera.getImage()
         xDiv = int(self.width / self.subImageWidth)
         yDiv = int(self.height / self.subImageHeight)
         # Loop through sub-images
@@ -39,8 +39,9 @@ class ImageFrameBuffer:
                 # loop through sub-image pixels
                 for py in range(yStart, yEnd):
                     for px in range(xStart, xEnd):
-                        b64_encoded += base64.b64encode(bytes(self.currentImage[px][py])).decode("utf-8")
-                        if not changed and (self.oldImage is None or self.oldImage[px][py] != self.currentImage[px][py]):
+                        index = 4 * (yStart * self.width + xStart)
+                        b64_encoded += base64.b64encode(bytes(self.currentImage[index:index + 3])).decode("utf-8")
+                        if not changed and (self.oldImage is None or self.oldImage[index:index + 3] != self.currentImage[index:index + 3]):
                             changed = True
                 if changed:
                     ret.append([xStart, yStart, xEnd - xStart, yEnd - yStart, b64_encoded])
