@@ -380,7 +380,7 @@ class GameSupervisor (Supervisor):
         frame['half_passed'] = self.half_passed
         frame['subimages'] = []
         imageFrameBuffer = self.imageFrameBufferA if team == constants.TEAM_RED else self.imageFrameBufferB
-        for subImage in imageFrameBuffer.update_image():
+        for subImage in imageFrameBuffer.update_image(self.getTime()):
             frame['subimages'].append(subImage)
         frame['coordinates'] = [None] * 3
         for t in constants.TEAMS:

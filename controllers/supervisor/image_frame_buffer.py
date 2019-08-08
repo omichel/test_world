@@ -15,9 +15,13 @@ class ImageFrameBuffer:
     def reset(self):
         self.oldImage = None
         self.currentImage = None
+        self.lastUpdateTime = None
 
-    def update_image(self):
+    def update_image(self, time):
         ret = []
+        if self.lastUpdateTime is not None and time - self.lastUpdateTime >= 0.001 * self.camera.getSamplingPeriod():
+            return ret
+        self.lastUpdateTime = time
         if self.currentImage is not None:
             self.oldImage = self.currentImage.copy()
         self.currentImage = self.camera.getImageArray()
