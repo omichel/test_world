@@ -75,7 +75,7 @@ class Participant():
         except socket.error:
             self.socket.close()
             exit(0)
-        if not data:  # the connection was likleyl closed because the simulation terminated
+        if not data:  # the connection was likely closed because the simulation terminated
             exit(0)
         return data.decode()
 
