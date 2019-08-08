@@ -29,17 +29,17 @@ class ImageFrameBuffer:
         yDiv = int(self.height / self.subImageHeight)
         # Loop through sub-images
         for y in range(self.subImageWidth):
+            yStart = y * yDiv
+            yEnd = min(yStart + yDiv, self.height)
             for x in range(self.subImageHeight):
                 xStart = x * xDiv
-                yStart = y * yDiv
                 xEnd = min(xStart + xDiv, self.width)
-                yEnd = min(yStart + yDiv, self.height)
                 changed = False
                 b64_encoded = ''
                 # loop through sub-image pixels
                 for py in range(yStart, yEnd):
                     for px in range(xStart, xEnd):
-                        index = 4 * (yStart * self.width + xStart)
+                        index = 4 * (py * self.width + px)
                         b64_encoded += base64.b64encode(bytes(self.currentImage[index:index + 3])).decode("utf-8")
                         if not changed and (self.oldImage is None or self.oldImage[index:index + 3] != self.currentImage[index:index + 3]):
                             changed = True
