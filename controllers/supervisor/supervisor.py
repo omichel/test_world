@@ -758,8 +758,7 @@ class GameSupervisor (Supervisor):
                 'rating': rating,
                 'exe': path_prefix + exe,
                 'path_prefix': path_prefix,
-                'role': team,
-                'pid': 0
+                'role': team
             })
 
             if team == constants.TEAM_RED:
@@ -814,8 +813,7 @@ class GameSupervisor (Supervisor):
                     'rating': 0,
                     'exe': path_prefix + exe,
                     'path_prefix': path_prefix + data,
-                    'role': constants.COMMENTATOR,
-                    'pid': 0
+                    'role': constants.COMMENTATOR
                 })
                 print('Commentator:\n')
                 print('  team name - ' + name + '\n')
@@ -848,8 +846,7 @@ class GameSupervisor (Supervisor):
                     'rating': 0,
                     'exe': path_prefix + exe,
                     'path_prefix': path_prefix + data,
-                    'role': constants.REPORTER,
-                    'pid': 0
+                    'role': constants.REPORTER
                 })
                 print('Reporter:\n')
                 print('  team name - ' + info['name'] + '\n')
@@ -908,8 +905,7 @@ class GameSupervisor (Supervisor):
                 command_line.append(self.role_info[player_info['role']]['key'])
                 command_line.append(player_info['path_prefix'])
                 print(command_line)
-                p = subprocess.Popen(command_line, bufsize=0)
-                player_info['pid'] = p.pid
+                subprocess.Popen(command_line)
 
         self.started = False
         print('Waiting for player to be ready...')
@@ -1342,15 +1338,6 @@ class GameSupervisor (Supervisor):
             print('Please wait until the message \033[36m\"INFO: Video creation finished.\"\033[0m is shown.')
             sys.stdout.flush()
             self.movieStopRecording()
-
-        # kill the participant processes to avoid that they continue to run in the background consuming CPU power uselessly
-        file = open('kill.txt', 'w')
-        for player_info in player_infos:
-            pid = player_info['pid']
-            file.write('killing ' + str(pid))
-            if pid:
-                os.kill(pid, signal.SIGKILL)
-        file.close()
 
     def save_report(self):
         # Save the report if anything has been written
