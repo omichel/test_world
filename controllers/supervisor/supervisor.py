@@ -15,6 +15,7 @@ import collections
 from controller import Supervisor
 
 from player import Game
+from image_frame_buffer import ImageFrameBuffer
 
 import constants
 
@@ -127,6 +128,8 @@ class GameSupervisor(Supervisor):
         self.cameraA.enable(constants.CAM_PERIOD_MS)
         self.cameraB = self.getCamera(constants.NAME_CAMB)
         self.cameraB.enable(constants.CAM_PERIOD_MS)
+        self.imageFrameBufferA = ImageFrameBuffer(self.cameraA, constants.SUBIMAGE_NX, constants.SUBIMAGE_NY)
+        self.imageFrameBufferB = ImageFrameBuffer(self.cameraB, constants.SUBIMAGE_NX, constants.SUBIMAGE_NY)
 
         self.cameraANode = self.getFromDef(constants.DEF_CAMA)
         self.cameraBNode = self.getFromDef(constants.DEF_CAMB)
@@ -227,9 +230,13 @@ class GameSupervisor(Supervisor):
                 self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_RED]))
             elif command.startswith('ready('):
                 self.ready[role] = True
+                if role == constants.TEAM_RED:
+                    self.imageFrameBufferA.reset()
+                elif role == constants.TEAM_BLUE:
+                    self.imageFrameBufferB.reset()
                 print('Server receive aiwc.ready from ' + get_role_name(role))
             elif command.startswith('set_speeds('):
-                if (role > constants.TEAM_BLUE):
+                if role > constants.TEAM_BLUE:
                     sys.stderr.write("Error, commentator and reporter cannot change robot speed.\n")
                     return
                 start = command.find('",') + 2
@@ -384,6 +391,9 @@ class GameSupervisor(Supervisor):
         frame['ball_ownership'] = True if self.ball_ownership == team else False
         frame['half_passed'] = self.half_passed
         frame['subimages'] = []
+        imageFrameBuffer = self.imageFrameBufferA if team == constants.TEAM_RED else self.imageFrameBufferB
+        for subImage in imageFrameBuffer.update_image(self.getTime()):
+            frame['subimages'].append(subImage)
         frame['coordinates'] = [None] * 3
         for t in constants.TEAMS:
             frame['coordinates'][t] = [None] * constants.NUMBER_OF_ROBOTS
