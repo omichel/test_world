@@ -82,7 +82,6 @@ class RuleBasedBPlayer(Participant):
             ##############################################################################
             elif received_frame.game_state == Game.STATE_KICKOFF:
                 #  if the ball belongs to my team, initiate kickoff
-                self.printConsole('Received KICKOFF')
                 if (received_frame.ball_ownership):
                     self.set_target_position(4, 0, 0, 1.4, 3.0, 0.4, False)
 
@@ -329,7 +328,6 @@ class RuleBasedBPlayer(Participant):
         ka = 0
         sign = 1
         # calculate how far the target position is from the robot
-        self.printConsole('position: ' + str(self.cur_posture[id][X]) + ', ' + str(self.cur_posture[id][Y]))
         dx = x - self.cur_posture[id][X]
         dy = y - self.cur_posture[id][Y]
         d_e = math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))

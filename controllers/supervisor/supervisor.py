@@ -287,9 +287,6 @@ class GameSupervisor(Supervisor):
         robot.getField('rwTranslation').setSFVec3f(rwTranslation)
         robot.getField('rwRotation').setSFRotation(wheelRotation)
         robot.resetPhysics()
-        self.robot[team][id]['x'] = translation[0]
-        self.robot[team][id]['y'] = translation[2]
-        self.robot[team][id]['th'] = rotation[3]
         self.robot[team][id]['active'] = True
         self.robot[team][id]['touch'] = False
         self.robot[team][id]['fall_time'] = 0
@@ -357,17 +354,6 @@ class GameSupervisor(Supervisor):
         # flush touch packet
         self.flush_touch_ball()
 
-    def update_positions(self):
-        for t in constants.TEAMS:
-            for id in range(constants.NUMBER_OF_ROBOTS):
-                node = self.robot[t][id]['node']
-                position = node.getPosition()
-                self.robot[t][id]['x'] = position[0]
-                self.robot[t][id]['y'] = position[2]
-                orientation = node.getOrientation()
-                self.robot[t][id]['th'] = orientation[3]
-        self.ball_position = self.get_ball_position()
-
     def publish_current_frame(self, reset_reason=None):
         frame_team_red = self.generate_frame(constants.TEAM_RED, reset_reason)  # frame also sent to commentator and reporter
         frame_team_blue = self.generate_frame(constants.TEAM_BLUE, reset_reason)
@@ -400,9 +386,10 @@ class GameSupervisor(Supervisor):
             c = team if t == constants.TEAM_RED else opponent
             for id in range(constants.NUMBER_OF_ROBOTS):
                 frame['coordinates'][t][id] = [None] * 5
-                frame['coordinates'][t][id][0] = self.robot[c][id]['x']
-                frame['coordinates'][t][id][1] = self.robot[c][id]['y']
-                frame['coordinates'][t][id][2] = self.robot[c][id]['th']
+                pos = self.get_robot_posture(c, id)
+                frame['coordinates'][t][id][0] = pos[0]
+                frame['coordinates'][t][id][1] = pos[1]
+                frame['coordinates'][t][id][2] = pos[2]
                 frame['coordinates'][t][id][3] = self.robot[c][id]['active']
                 frame['coordinates'][t][id][4] = self.robot[c][id]['touch']
         frame['coordinates'][2] = [None] * 2
@@ -897,11 +884,6 @@ class GameSupervisor(Supervisor):
                 node = self.getFromDef(get_robot_name(t, id))
                 self.robot[t][id] = {}
                 self.robot[t][id]['node'] = node
-                position = node.getPosition()
-                self.robot[t][id]['x'] = position[0]
-                self.robot[t][id]['y'] = position[2]
-                orientation = node.getOrientation()
-                self.robot[t][id]['th'] = orientation[3]
                 self.robot[t][id]['active'] = True
                 self.robot[t][id]['touch'] = False
                 self.robot[t][id]['niopa_time'] = self.time  # not_in_opponent_penalty_area time
@@ -948,14 +930,14 @@ class GameSupervisor(Supervisor):
                         self.movieStartRecording(record_fullpath, 1920, 1080, 0, 100, 1, False)
                     print('Starting match.')
                     self.started = True
-                    self.update_positions()
+                    self.ball_position = self.get_ball_position()
                     self.publish_current_frame(Game.GAME_START)
                 else:
                     if self.step(self.timeStep) == -1:
                         break
                 continue
 
-            self.update_positions()
+            self.ball_position = self.get_ball_position()
             if self.time > self.game_time:  # half of game over
                 if self.half_passed:  # game over
                     if repeat:
