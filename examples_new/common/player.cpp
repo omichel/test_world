@@ -51,7 +51,7 @@ void Player::sendToServer(std::string message, std::string arguments) {
 json Player::receive() {
   std::string completeBuffer;
   do {
-    char buffer[4096];
+    char buffer[4097];
     memset(buffer, '\0', sizeof(buffer));
     read(mConnFd, (void *)buffer, sizeof(buffer) - 1);
     completeBuffer += buffer;
