@@ -12,6 +12,7 @@ class Frame():
         self.subimages = None
         self.coordinates = None
         self.half_passed = None
+        self.end_of_frame = False
 
     # coordinates
     MY_TEAM = 0

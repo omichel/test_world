@@ -35,7 +35,6 @@ class RuleBasedBPlayer(Participant):
         self.robot_size = info['robot_size']
         self.max_linear_velocity = info['max_linear_velocity']
         self.colorChannels = 3
-        self.end_of_frame = False
         self.cur_posture = []
         self.cur_ball = []
         self.prev_posture = []
@@ -47,8 +46,7 @@ class RuleBasedBPlayer(Participant):
         self.wheels = [0 for _ in range(10)]
 
     def update(self, received_frame):
-
-        if self.end_of_frame:
+        if received_frame.end_of_frame:
             if received_frame.reset_reason != Game.NONE:
                 self.previous_frame = received_frame
             self.get_coord(received_frame)
@@ -84,6 +82,7 @@ class RuleBasedBPlayer(Participant):
             ##############################################################################
             elif received_frame.game_state == Game.STATE_KICKOFF:
                 #  if the ball belongs to my team, initiate kickoff
+                self.printConsole('Received KICKOFF')
                 if (received_frame.ball_ownership):
                     self.set_target_position(4, 0, 0, 1.4, 3.0, 0.4, False)
 
@@ -114,7 +113,6 @@ class RuleBasedBPlayer(Participant):
                 self.set_speeds(self.wheels)
             ##############################################################################
 
-        self.end_of_frame = False
         self.previous_frame = received_frame
 
         return True
@@ -331,10 +329,10 @@ class RuleBasedBPlayer(Participant):
         ka = 0
         sign = 1
         # calculate how far the target position is from the robot
+        self.printConsole('position: ' + str(self.cur_posture[id][X]) + ', ' + str(self.cur_posture[id][Y]))
         dx = x - self.cur_posture[id][X]
         dy = y - self.cur_posture[id][Y]
         d_e = math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
-        sys.stdout.flush()
         # calculate how much the direction is off
         desired_th = (math.pi / 2) if (dx == 0 and dy == 0) else math.atan2(dy, dx)
         d_th = desired_th - self.cur_posture[id][Frame.TH]
