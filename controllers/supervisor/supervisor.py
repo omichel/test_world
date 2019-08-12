@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import errno
 import json
 import math
 import os
@@ -98,13 +99,20 @@ class TcpServer:
                     print('Accepted ', client_address)
                 else:
                     success = True
-                    data = None
+                    data = ''
                     try:
-                        data = s.recv(4096)
+                        while True:
+                            d = s.recv(4096)
+                            if not d:
+                                break
+                            data += d
                     except socket.error as e:
-                        if e.args[0] != 10053:
-                            print('Error caught: ', e.args[0])
-                        success = False
+                        if e.args[0] == errno.EWOULDBLOCK:
+                            success = True
+                        else:
+                            if e.args[0] != 10053: // WSAECONNABORTED
+                                print('Error caught: ', e.args[0])
+                            success = False
                     if data and success:
                         game_supervisor.callback(s, data.decode())
                     else:
