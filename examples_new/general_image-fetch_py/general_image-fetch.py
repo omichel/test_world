@@ -4,6 +4,8 @@
 # Maintainer: Chansol Hong (cshong@rit.kaist.ac.kr)
 
 import base64
+import numpy as np
+from PIL import Image
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
@@ -18,20 +20,21 @@ except ImportError as err:
 class ImageFetch(Participant):
     def init(self, info):
         self.cameraResolution = info['resolution']
-        self.image = [[[0] * 3] * self.cameraResolution[1]] * self.cameraResolution[0]
+        self.ImageBuffer = np.zeros((self.cameraResolution[1], self.cameraResolution[0], 3))
 
     def update(self, frame):
-        # print(frame.subimages)
         for subimage in frame.subimages:
-            decoded = bytes(base64.standard_b64decode(subimage[4]))
+            decoded = map(ord, bytes(base64.standard_b64decode(subimage[4])))
+            print(decoded)
             x = subimage[0]
             y = subimage[1]
             w = subimage[2]
             h = subimage[3]
             for i in range(w):
                 for j in range(h):
-                    self.image[x + i][y + j] = [decoded[4 * (i * h + j)], decoded[4 * (i * h + j) + 1], decoded[4 * (i * h + j) + 2]]
-
+                    self.ImageBuffer[y + j][x + i] = [decoded[4 * (i * h + j)], decoded[4 * (i * h + j) + 1], decoded[4 * (i * h + j) + 2]]
+            # img = Image.fromarray(self.ImageBuffer, 'RGB')
+            # img.show()
 
 if __name__ == '__main__':
     player = ImageFetch()
