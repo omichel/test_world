@@ -214,6 +214,8 @@ class GameSupervisor(Supervisor):
                 )
 
     def callback(self, client, message):
+        if not message.startswith('aiwc.') and 'aiwc.' in message:
+            message = 'aiwc.' + message.split('aiwc.', 1)[-1]
         if not message.startswith('aiwc.'):
             print('Error, AIWC RPC messages should start with "aiwc.".')
             return
@@ -242,8 +244,11 @@ class GameSupervisor(Supervisor):
                 start = command.find('",') + 2
                 end = command.find(')', start)
                 speeds = command[start:end]
-                speeds = [float(i) for i in speeds.split(',')]
-                self.set_speeds(role, speeds)
+                try:
+                    speeds = [float(i) for i in speeds.split(',')]
+                    self.set_speeds(role, speeds)
+                except:
+                    pass
             elif command.startswith('commentate('):
                 if role != constants.COMMENTATOR:
                     sys.stderr.write("Error, only commentator can commentate.\n")

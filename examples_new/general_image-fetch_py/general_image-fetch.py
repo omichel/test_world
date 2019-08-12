@@ -18,7 +18,7 @@ except ImportError as err:
 class ImageFetch(Participant):
     def init(self, info):
         self.cameraResolution = info['resolution']
-        self.image = [[[0] * self.cameraResolution[1]] * self.cameraResolution[0] * 3]
+        self.image = [[[0] * 3] * self.cameraResolution[1]] * self.cameraResolution[0]
 
     def update(self, frame):
         # print(frame.subimages)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 import base64
 
@@ -48,6 +48,5 @@ class ImageFrameBuffer:
                     for py in range(yStart, yEnd):
                         index = 4 * (py * self.width + xStart)
                         pixels.extend(self.currentImage[index:index + xLength * 4])
-                    ret.append([xStart, yStart, xLength, yLength, base64.standard_b64encode(bytes(pixels))])
-                    #print(ret)
+                    ret.append([xStart, yStart, xLength, yLength, base64.standard_b64encode(bytes(pixels)).decode("utf-8")])
         return ret
