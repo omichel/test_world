@@ -21,10 +21,9 @@ class ImageFetch(Participant):
         self.image = [[[0] * self.cameraResolution[1]] * self.cameraResolution[0] * 3]
 
     def update(self, frame):
-        print(frame.subimages)
+        # print(frame.subimages)
         for subimage in frame.subimages:
-            decoded = base64.b64decode(subimage[4])
-            #print(decoded)
+            decoded = base64.standard_b64decode(subimage[4])
             x = subimage[0]
             y = subimage[1]
             w = subimage[2]
@@ -32,7 +31,6 @@ class ImageFetch(Participant):
             for i in range(w):
                 for j in range(h):
                     self.image[x + i][y + j] = [decoded[4 * (i * h + j)], decoded[4 * (i * h + j) + 1], decoded[4 * (i * h + j) + 2]]
-        #print(self.image)
 
 
 if __name__ == '__main__':

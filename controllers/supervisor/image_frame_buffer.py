@@ -44,9 +44,11 @@ class ImageFrameBuffer:
                         changed = True
                         break
                 if changed:
-                    b64_encoded = ''
+                    pixels = []
                     for py in range(yStart, yEnd):
                         index = 4 * (py * self.width + xStart)
-                        b64_encoded += base64.b64encode(bytes(self.currentImage[index:index + xLength * 4])).decode("utf-8")
-                    ret.append([xStart, yStart, xLength, yLength, b64_encoded])
+                        pixels.extend(self.currentImage[index:index + xLength * 4])
+                    print(base64.b64encode(bytes(pixels)))
+                    print(type(base64.b64encode(bytes(pixels))))
+                    ret.append([xStart, yStart, xLength, yLength, base64.b64encode(bytes(pixels))])
         return ret
