@@ -48,7 +48,6 @@ class ImageFrameBuffer:
                     for py in range(yStart, yEnd):
                         index = 4 * (py * self.width + xStart)
                         pixels.extend(self.currentImage[index:index + xLength * 4])
-                    print(base64.b64encode(bytes(pixels)))
-                    print(type(base64.b64encode(bytes(pixels))))
-                    ret.append([xStart, yStart, xLength, yLength, base64.b64encode(bytes(pixels))])
+                    ret.append([xStart, yStart, xLength, yLength, base64.standard_b64encode(bytes(pixels))])
+                    #print(ret)
         return ret
