@@ -110,7 +110,7 @@ class TcpServer:
                         if e.args[0] == errno.EWOULDBLOCK:
                             success = True
                         else:
-                            if e.args[0] != 10053: // WSAECONNABORTED
+                            if e.args[0] != 10053: # WSAECONNABORTED
                                 print('Error caught: ', e.args[0])
                             success = False
                     if data and success:
