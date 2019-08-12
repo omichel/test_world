@@ -24,8 +24,7 @@ class ImageFetch(Participant):
 
     def update(self, frame):
         for subimage in frame.subimages:
-            decoded = map(ord, bytes(base64.standard_b64decode(subimage[4])))
-            print(decoded)
+            decoded = map(ord, bytes(base64.b64decode(subimage[4])))
             x = subimage[0]
             y = subimage[1]
             w = subimage[2]
