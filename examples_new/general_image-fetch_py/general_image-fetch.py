@@ -29,10 +29,10 @@ class ImageFetch(Participant):
             y = subimage[1]
             w = subimage[2]
             h = subimage[3]
-            for i in range(w):
-                for j in range(h):
-                    index = 4 * (i * h + j)
-                    self.ImageBuffer[y + j][x + i] = decoded[index:index + 3]
+            for i in range(h):
+                for j in range(w):
+                    index = 4 * (i * w + j)
+                    self.ImageBuffer[y + i][x + j] = decoded[index:index + 3]
             # img = Image.fromarray(self.ImageBuffer, 'RGB')
             # img.show()
 

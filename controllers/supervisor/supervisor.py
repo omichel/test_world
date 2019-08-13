@@ -77,7 +77,7 @@ class TcpServer:
             return
         try:
             client.sendall(message.encode())
-        except socket.ConnectionAbortedError:
+        except ConnectionAbortedError:
             self.connections.remove(client)
 
     def spin(self, game_supervisor):  # handle asynchronous requests from clients
