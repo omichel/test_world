@@ -65,6 +65,8 @@ class TcpServer:
         self.server.bind((host, port))
         self.server.listen(5)
         self.connections = [self.server]
+        self.fromPreviousMessage = {}
+        self.fromPreviousMessage[self.server.fileno()] = ''
 
     def send_to_all(self, message):  # send message to all clients
         for client in self.connections:
@@ -95,6 +97,7 @@ class TcpServer:
                     connection, client_address = s.accept()
                     connection.setblocking(False)
                     self.connections.append(connection)
+                    self.fromPreviousMessage[connection.fileno()] = ''
                     print('Accepted ', client_address)
                 else:
                     success = True
@@ -106,7 +109,8 @@ class TcpServer:
                             print('Error caught: ', e.args[0])
                         success = False
                     if data and success:
-                        game_supervisor.callback(s, data.decode())
+                        self.fromPreviousMessage[s.fileno()] = \
+                            game_supervisor.callback(s, self.fromPreviousMessage[s.fileno()] + data.decode())
                     else:
                         print('Closing')
                         cleanup(s)
@@ -120,7 +124,6 @@ class GameSupervisor(Supervisor):
         Supervisor.__init__(self)
         self.timeStep = 10
         self.report = None
-        self.fromPreviousMessage = ''
 
         self.receiver = self.getReceiver(constants.NAME_RECV)
         self.receiver.enable(constants.RECV_PERIOD_MS)
@@ -215,11 +218,10 @@ class GameSupervisor(Supervisor):
                 )
 
     def callback(self, client, message):
-        message = self.fromPreviousMessage + message
-        self.fromPreviousMessage = ''
+        unprocessed = ''
         if not message.startswith('aiwc.'):
             print('Error, AIWC RPC messages should start with "aiwc.".')
-            return
+            return unprocessed
 
         # Handle concatenated messages
         data = message.split('aiwc.')
@@ -227,7 +229,7 @@ class GameSupervisor(Supervisor):
             if not command:
                 continue
             if not command.endswith(')'):
-                self.fromPreviousMessage += 'aiwc.' + command
+                unprocessed += 'aiwc.' + command
                 continue
             role = self.get_role(command)
             self.role_client[role] = client
@@ -244,7 +246,7 @@ class GameSupervisor(Supervisor):
             elif command.startswith('set_speeds('):
                 if role > constants.TEAM_BLUE:
                     sys.stderr.write("Error, commentator and reporter cannot change robot speed.\n")
-                    return
+                    return unprocessed
                 start = command.find('",') + 2
                 end = command.find(')', start)
                 speeds = command[start:end]
@@ -253,18 +255,19 @@ class GameSupervisor(Supervisor):
             elif command.startswith('commentate('):
                 if role != constants.COMMENTATOR:
                     sys.stderr.write("Error, only commentator can commentate.\n")
-                    return
+                    return unprocessed
                 start = command.find('",') + 4
                 comment = '[{:.2f}] {}'.format(self.time / 1000., command[start:-2])
                 self.comments_.append(comment)
             elif command.startswith('report('):
                 if role != constants.REPORTER:
                     sys.stderr.write("Error, only reporter can report.\n")
-                    return
+                    return unprocessed
                 start = command.find('",') + 2
                 self.report = command[start:-1]
             else:
                 print('Server received unknown message', message)
+        return unprocessed
 
     def reset_ball(self, x, z):
         f = -1.0 if self.half_passed else 1.0
