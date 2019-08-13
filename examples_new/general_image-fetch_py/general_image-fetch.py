@@ -35,6 +35,9 @@ class ImageFetch(Participant):
                     self.ImageBuffer[j + y, k + x, 0] = image[j, k, 2]  # red channel
                     self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1]  # green channel
                     self.ImageBuffer[j + y, k + x, 2] = image[j, k, 0]  # blue channel
+        # Uncomment this part to display the image
+        # img = Image.fromarray(self.ImageBuffer, 'RGB')
+        # img.show()
 
 
 if __name__ == '__main__':
