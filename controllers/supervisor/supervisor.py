@@ -120,6 +120,7 @@ class GameSupervisor(Supervisor):
         Supervisor.__init__(self)
         self.timeStep = 10
         self.report = None
+        self.fromPreviousMessage = ''
 
         self.receiver = self.getReceiver(constants.NAME_RECV)
         self.receiver.enable(constants.RECV_PERIOD_MS)
@@ -214,8 +215,8 @@ class GameSupervisor(Supervisor):
                 )
 
     def callback(self, client, message):
-        if not message.startswith('aiwc.') and 'aiwc.' in message:
-            message = 'aiwc.' + message.split('aiwc.', 1)[-1]
+        message = self.fromPreviousMessage + message
+        self.fromPreviousMessage = ''
         if not message.startswith('aiwc.'):
             print('Error, AIWC RPC messages should start with "aiwc.".')
             return
@@ -224,6 +225,9 @@ class GameSupervisor(Supervisor):
         data = message.split('aiwc.')
         for command in data:
             if not command:
+                continue
+            if not command.endswith(')'):
+                self.fromPreviousMessage += 'aiwc.' + command
                 continue
             role = self.get_role(command)
             self.role_client[role] = client
@@ -244,11 +248,8 @@ class GameSupervisor(Supervisor):
                 start = command.find('",') + 2
                 end = command.find(')', start)
                 speeds = command[start:end]
-                try:
-                    speeds = [float(i) for i in speeds.split(',')]
-                    self.set_speeds(role, speeds)
-                except:
-                    pass
+                speeds = [float(i) for i in speeds.split(',')]
+                self.set_speeds(role, speeds)
             elif command.startswith('commentate('):
                 if role != constants.COMMENTATOR:
                     sys.stderr.write("Error, only commentator can commentate.\n")
