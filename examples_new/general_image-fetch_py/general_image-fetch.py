@@ -24,17 +24,18 @@ class ImageFetch(Participant):
 
     def update(self, frame):
         for subimage in frame.subimages:
-            decoded = map(ord, bytes(base64.b64decode(subimage[4])))
             x = subimage[0]
             y = subimage[1]
             w = subimage[2]
             h = subimage[3]
-            for i in range(h):
-                for j in range(w):
-                    index = 4 * (i * w + j)
-                    self.ImageBuffer[y + i][x + j] = decoded[index:index + 3]
-            # img = Image.fromarray(self.ImageBuffer, 'RGB')
-            # img.show()
+            decoded = np.fromstring(base64.b64decode(subimage[4]), dtype=np.uint8)  # convert byte array to numpy array
+            image = decoded.reshape((h, w, 4))
+            for j in range(h):
+                for k in range(w):
+                    self.ImageBuffer[j + y, k + x, 0] = image[j, k, 2]  # red channel
+                    self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1]  # green channel
+                    self.ImageBuffer[j + y, k + x, 2] = image[j, k, 0]  # blue channel
+
 
 if __name__ == '__main__':
     player = ImageFetch()
