@@ -66,8 +66,8 @@ class TcpServer:
         self.server.bind((host, port))
         self.server.listen(5)
         self.connections = [self.server]
-        self.fromPreviousMessage = {}
-        self.fromPreviousMessage[self.server.fileno()] = ''
+        self.unprocessedData = {}
+        self.unprocessedData[self.server.fileno()] = ''
 
     def send_to_all(self, message):  # send message to all clients
         for client in self.connections:
@@ -98,7 +98,7 @@ class TcpServer:
                     connection, client_address = s.accept()
                     connection.setblocking(False)
                     self.connections.append(connection)
-                    self.fromPreviousMessage[connection.fileno()] = ''
+                    self.unprocessedData[connection.fileno()] = ''
                     print('Accepted ', client_address)
                 else:
                     success = True
@@ -117,8 +117,8 @@ class TcpServer:
                                 print('Error caught: ', e.args[0])
                             success = False
                     if data and success:
-                        self.fromPreviousMessage[s.fileno()] = \
-                            game_supervisor.callback(s, self.fromPreviousMessage[s.fileno()] + data)
+                        self.unprocessedData[s.fileno()] = \
+                            game_supervisor.callback(s, self.unprocessedData[s.fileno()] + data)
                     else:
                         print('Closing')
                         cleanup(s)
