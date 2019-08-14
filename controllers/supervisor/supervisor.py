@@ -425,14 +425,16 @@ class GameSupervisor(Supervisor):
             self.set_speeds(t, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
     def update_label(self):
+        seconds = self.time / 1000.0
+        minutes = seconds // 60
+        seconds -= minutes * 60
         if not self.half_passed:
-            self.setLabel(1, '1st Half', 0.45, 0.9, 0.10, 0x00000000, 0, 'Arial')
-            self.setLabel(0, 'score %d:%d, time %.2f' % (self.score[0], self.score[1], self.time / 1000.),
-                          0.4, 0.95, 0.1, 0x00000000, 0, 'Arial')
+            self.setLabel(1, '%d:%d' % (self.score[0], self.score[1]), 0.48, 0.9, 0.10, 0x00000000, 0, 'Arial')
+            self.setLabel(0, '%d:%05.2f (1st half)' % (minutes, seconds), 0.45, 0.95, 0.1, 0x00000000, 0, 'Arial')
         else:
-            self.setLabel(1, '2nd Half', 0.45, 0.9, 0.10, 0x00000000, 0, 'Arial')
-            self.setLabel(0, 'score %d:%d, time %.2f' % (self.score[1], self.score[0], (self.game_time + self.time) / 1000.),
-                          0.4, 0.95, 0.10, 0x00000000, 0, 'Arial')
+            minutes += self.game_time / 60000
+            self.setLabel(1, '%d:%d' % (self.score[1], self.score[0]), 0.48, 0.9, 0.10, 0x00000000, 0, 'Arial')
+            self.setLabel(0, '%d:%05.2f (2nd half)' % (minutes, seconds), 0.45, 0.95, 0.1, 0x00000000, 0, 'Arial')
 
         comments_start = 2
 
@@ -957,7 +959,7 @@ class GameSupervisor(Supervisor):
                 continue
 
             self.ball_position = self.get_ball_position()
-            if self.time > self.game_time:  # half of game over
+            if self.time >= self.game_time:  # half of game over
                 if self.half_passed:  # game over
                     if repeat:
                         self.publish_current_frame(Game.EPISODE_END)
