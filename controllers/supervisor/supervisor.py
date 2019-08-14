@@ -949,6 +949,8 @@ class GameSupervisor(Supervisor):
                     self.started = True
                     self.ball_position = self.get_ball_position()
                     self.publish_current_frame(Game.GAME_START)
+                    if self.step(constants.WAIT_STABLE_MS) == -1:
+                        break
                 else:
                     if self.step(self.timeStep) == -1:
                         break
