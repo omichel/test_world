@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Author(s): Luiz Felipe Vecchietti, Chansol Hong, Inbae Jeong
 # Maintainer: Chansol Hong (cshong@rit.kaist.ac.kr)
@@ -23,7 +23,7 @@ X = Frame.X
 Y = Frame.Y
 
 
-class RuleBasedBPlayer(Participant):
+class RuleBasedB(Participant):
     def init(self, info):
         self.game_time = info['game_time']
         self.number_of_robots = info['number_of_robots']
@@ -511,5 +511,5 @@ class RuleBasedBPlayer(Participant):
 
 
 if __name__ == '__main__':
-    player = RuleBasedBPlayer()
+    player = RuleBasedB()
     player.run()

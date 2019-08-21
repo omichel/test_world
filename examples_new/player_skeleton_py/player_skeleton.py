@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Author(s): Luiz Felipe Vecchietti, Chansol Hong, Inbae Jeong
 # Maintainer: Chansol Hong (cshong@rit.kaist.ac.kr)
@@ -13,7 +13,7 @@ except ImportError as err:
     raise
 
 
-class RandomWalkPlayer(Participant):
+class RandomWalk(Participant):
     def init(self, info):
         self.number_of_robots = info['number_of_robots']
         self.max_linear_velocity = info['max_linear_velocity']
@@ -21,11 +21,11 @@ class RandomWalkPlayer(Participant):
     def update(self, frame):
         speeds = []
         for i in range(self.number_of_robots):
-            speeds.append(self.max_linear_velocity[i])
-            speeds.append(self.max_linear_velocity[i])
+            speeds.append(self.max_linear_velocity[i]) # left wheel of robot i
+            speeds.append(self.max_linear_velocity[i]) # right wheel of robot i
         self.set_speeds(speeds)
 
 
 if __name__ == '__main__':
-    player = RandomWalkPlayer()
+    player = RandomWalk()
     player.run()
