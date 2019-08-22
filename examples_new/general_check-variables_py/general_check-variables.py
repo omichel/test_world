@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
     from participant import Participant, Game, Frame
 except ImportError as err:
-    print('general_image-fetch: \'participant\' module cannot be imported:', err)
+    print('general_check-variables: \'participant\' module cannot be imported:', err)
     raise
 
 # shortcuts

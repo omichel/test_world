@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
-    from participant import Participant
+    from participant import Participant, Game, Frame
 except ImportError as err:
     print('reporter_skeleton: \'participant\' module cannot be imported:', err)
     raise
