@@ -3,10 +3,6 @@
 # Author(s): Luiz Felipe Vecchietti, Chansol Hong, Inbae Jeong
 # Maintainer: Chansol Hong (cshong@rit.kaist.ac.kr)
 
-# Additional Information:
-# Train Robot 0 to chase the ball from its coordinates, orientation and the ball coordinates
-# GameTime and Deadlock duration can be setup on Webots depending on the number of steps and training details
-
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
@@ -34,29 +30,15 @@ TOUCH = Frame.TOUCH
 #path to your checkpoint
 CHECKPOINT = os.path.join(os.path.dirname(__file__), 'dqn.ckpt')
 
-class DeepLearningTrain(Participant):
+class DeepLearningPlay(Participant):
     def init(self, info):
         self.resolution = info['resolution']
         self.max_linear_velocity = info['max_linear_velocity']
         self.colorChannels = 3 # nf
         self.end_of_frame = False
         self.ImageBuffer = np.zeros((self.resolution[1], self.resolution[0], 3), dtype=np.uint8)
-        self.D = [] # Replay Memory
-        self.update_frequency = 100 # Update Target Network
-        self.epsilon = 1.0 # Initial epsilon value
-        self.final_epsilon = 0.05 # Final epsilon value
-        self.dec_epsilon = 0.05 # Decrease rate of epsilon for every generation
-        self.step_epsilon = 20000 # Number of iterations for every generation
-        self.observation_steps = 5000 # Number of iterations to observe before training every generation
-        self.save_every_steps = 5000 # Save checkpoint
-        self.num_actions = 11 # Number of possible possible actions
         self._frame = 0
-        self._iterations = 0
-        self.minibatch_size = 64
-        self.gamma = 0.99
-        self.sqerror = 100 # Initial sqerror value
-        self.Q = NeuralNetwork(None, False, False) # 2nd term: False to start training from scratch, use CHECKPOINT to load a checkpoint
-        self.Q_ = NeuralNetwork(self.Q, False, True)
+        self.Q = NeuralNetwork(None, CHECKPOINT, False) # 2nd term: False to start training from scratch, use CHECKPOINT to load a checkpoint
         self.wheels = [0 for _ in range(10)]
 
     def set_action(self, robot_id, action_number):
@@ -149,46 +131,11 @@ class DeepLearningTrain(Participant):
                     round(frame.coordinates[Frame.BALL][Y]/1.35, 2)]
 
         # Action
-        if np.random.rand() < self.epsilon:
-            action = random.randint(0,10)
-        else:
-            action = self.Q.BestAction(np.array(position)) # using CNNs use final_img as input
+        action = self.Q.BestAction(np.array(position)) # using CNNs use final_img as input
 
         # Set robot wheels
         self.set_action(0, action)
         self.set_speeds(self.wheels)
-
-        # Update Replay Memory
-        self.D.append([np.array(position), action, reward])
-
-        # Training!
-        if len(self.D) >= self.observation_steps:
-            self._iterations += 1
-            a = np.zeros((self.minibatch_size, self.num_actions))
-            r = np.zeros((self.minibatch_size, 1))
-            batch_phy = np.zeros((self.minibatch_size, 5)) # depends on what is your input state
-            batch_phy_ = np.zeros((self.minibatch_size, 5)) # depends on what is your input state
-            for i in range(self.minibatch_size):
-                index = np.random.randint(len(self.D)-1) # Sample a random index from the replay memory
-                a[i] = [0 if j !=self.D[index][1] else 1 for j in range(self.num_actions)]
-                r[i] = self.D[index][2]
-                batch_phy[i] = self.D[index][0].reshape((1,5)) # depends on what is your input state
-                batch_phy_[i] = self.D[index+1][0].reshape((1,5)) # depends on what is your input state
-            y_value = r + self.gamma*np.max(self.Q_.IterateNetwork(batch_phy_), axis=1).reshape((self.minibatch_size,1))
-            self.sqerror = self.Q.TrainNetwork(batch_phy, a, y_value)
-            if self._iterations % 100 == 0: # Print information every 100 iterations
-                self.printConsole("Squared Error(Episode" + str(self._iterations) + "): " + str(self.sqerror))
-                self.printConsole("Epsilon: " + str(self.epsilon))
-            if self._iterations % self.update_frequency == 0:
-                self.Q_.Copy(self.Q)
-                self.printConsole("Copied Target Network")
-            if self._iterations % self.save_every_steps == 0:
-                self.Q.SaveToFile(CHECKPOINT)
-                self.printConsole("Saved Checkpoint")
-            if self._iterations % self.step_epsilon == 0:
-                self.epsilon = max(self.epsilon - self.dec_epsilon, self.final_epsilon)
-                self.D = [] # Reset Replay Memory for new generation
-                self.printConsole("New Episode! New Epsilon:" + str(self.epsilon))
 
     def finish(self, frame):
         # save your data if necessary before the program terminates
@@ -196,5 +143,5 @@ class DeepLearningTrain(Participant):
 
 
 if __name__ == '__main__':
-    player = DeepLearningTrain()
+    player = DeepLearningPlay()
     player.run()
