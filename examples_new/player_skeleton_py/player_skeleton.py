@@ -25,6 +25,10 @@ class RandomWalk(Participant):
             speeds.append(self.max_linear_velocity[i]) # right wheel of robot i
         self.set_speeds(speeds)
 
+    def finish(self, frame):
+        # save your data if necessary before the program terminates
+        print("finish() method called")
+
 
 if __name__ == '__main__':
     player = RandomWalk()

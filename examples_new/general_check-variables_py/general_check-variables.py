@@ -125,6 +125,10 @@ class CheckVariables(Participant):
             self.printConsole("  touch: {}".format(myteam[i][TOUCH]))
             self.printConsole("======================================================")
 
+    def finish(self, frame):
+        # save your data if necessary before the program terminates
+        print("finish() method called")
+
 
 if __name__ == '__main__':
     player = CheckVariables()

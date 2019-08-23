@@ -39,6 +39,10 @@ class ImageFetch(Participant):
         cv2.imshow('image', self.ImageBuffer / 255.0)
         cv2.waitKey(1)
 
+    def finish(self, frame):
+        # save your data if necessary before the program terminates
+        print("finish() method called")
+
 
 if __name__ == '__main__':
     player = ImageFetch()
