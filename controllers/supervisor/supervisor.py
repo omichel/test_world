@@ -920,6 +920,8 @@ class GameSupervisor(Supervisor):
                 command_line = []
                 if exe.endswith('.py'):
                     os.environ['PYTHONPATH'] += os.pathsep + os.path.join(os.getcwd(), 'player_py')
+                    if sys.platform == 'win32':
+                        command_line.append('python')
                 command_line.append(exe)
                 command_line.append(constants.SERVER_IP)
                 command_line.append(str(constants.SERVER_PORT))
