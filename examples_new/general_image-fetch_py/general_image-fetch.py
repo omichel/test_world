@@ -19,7 +19,7 @@ import numpy as np
 class ImageFetch(Participant):
     def init(self, info):
         self.resolution = info['resolution']
-        self.ImageBuffer = np.zeros((self.resolution[1], self.resolution[0], 3), dtype=np.uint8)
+        self.image_buffer = np.zeros((self.resolution[1], self.resolution[0], 3), dtype=np.uint8)
 
     def update_image_buffer(self, subimages):
         for subimage in subimages:
@@ -31,15 +31,15 @@ class ImageFetch(Participant):
             image = decoded.reshape((h, w, 4))
             for j in range(h):
                 for k in range(w):
-                    self.ImageBuffer[j + y, k + x, 0] = image[j, k, 0] # blue channel
-                    self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1] # green channel
-                    self.ImageBuffer[j + y, k + x, 2] = image[j, k, 2] # red channel
+                    self.image_buffer[j + y, k + x, 0] = image[j, k, 0] # blue channel
+                    self.image_buffer[j + y, k + x, 1] = image[j, k, 1] # green channel
+                    self.image_buffer[j + y, k + x, 2] = image[j, k, 2] # red channel
 
     def update(self, frame):
         self.update_image_buffer(frame.subimages)
 
         # display the received image
-        cv2.imshow('image', self.ImageBuffer / 255.0)
+        cv2.imshow('image', self.image_buffer / 255.0)
         cv2.waitKey(1)
 
     def finish(self, frame):
@@ -48,5 +48,5 @@ class ImageFetch(Participant):
 
 
 if __name__ == '__main__':
-    player = ImageFetch()
-    player.run()
+    participant = ImageFetch()
+    participant.run()

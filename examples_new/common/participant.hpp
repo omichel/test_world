@@ -1,15 +1,15 @@
-#ifndef PLAYER_HPP
-#define PLAYER_HPP
+#ifndef PARTICIPANT_HPP
+#define PARTICIPANT_HPP
 
 #include "json.hpp"
 
 using namespace nlohmann;
 
-class Player {
+class Participant {
 
 public:
-  Player(char **argv);
-  virtual ~Player();
+  Participant(char **argv);
+  virtual ~Participant();
 
   void setSpeeds(std::vector<double> speeds);
   void run();
@@ -29,4 +29,4 @@ private:
   int mConnFd;
 };
 
-#endif // PLAYER_HPP
+#endif // PARTICIPANT_HPP

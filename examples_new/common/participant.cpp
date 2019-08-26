@@ -1,4 +1,4 @@
-#include "player.hpp"
+#include "participant.hpp"
 
 #include "game.hpp"
 
@@ -7,7 +7,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-Player::Player(char **argv) {
+Participant::Participant(char **argv) {
   int port = std::stoi(argv[2], nullptr);
   mKey = argv[3];
   mData = argv[4];
@@ -34,12 +34,12 @@ Player::Player(char **argv) {
   }
 }
 
-Player::~Player() {
+Participant::~Participant() {
   if (shutdown(mConnFd, SHUT_RDWR) == -1 || close(mConnFd) == -1)
     printf("Failed to shutdown connection with the server...\n");
 }
 
-void Player::sendToServer(std::string message, std::string arguments) {
+void Participant::sendToServer(std::string message, std::string arguments) {
   std::string toSend = "aiwc." + message + "(\"" + mKey + "\"";
   if (arguments.size() > 0)
     toSend += ", " + arguments;
@@ -48,7 +48,7 @@ void Player::sendToServer(std::string message, std::string arguments) {
   send(mConnFd, (void *)toSendString, strlen(toSendString) * sizeof(char), 0);
 }
 
-json Player::receive() {
+json Participant::receive() {
   std::string completeBuffer;
   do {
     char buffer[4097];
@@ -59,7 +59,7 @@ json Player::receive() {
   return json::parse(completeBuffer.c_str());
 }
 
-void Player::setSpeeds(std::vector<double> speeds) {
+void Participant::setSpeeds(std::vector<double> speeds) {
   std::string arguments = "";
   for (unsigned i = 0; i < speeds.size(); i++)
     arguments += std::to_string(speeds[i]) + ", ";
@@ -67,20 +67,20 @@ void Player::setSpeeds(std::vector<double> speeds) {
   sendToServer("set_speeds", arguments);
 }
 
-bool Player::check_frame(json frame) {
+bool Participant::check_frame(json frame) {
   if (frame.find("reset_reason") != frame.end() &&
       frame["reset_reason"] == RESET_GAME_END)
     return false;
   return true;
 }
 
-void Player::init(json info) { printf("init() method called...\n"); }
+void Participant::init(json info) { printf("init() method called...\n"); }
 
-void Player::update(json frame) { printf("update() method called...\n"); }
+void Participant::update(json frame) { printf("update() method called...\n"); }
 
-void Player::finish() { printf("finish() method called...\n"); }
+void Participant::finish() { printf("finish() method called...\n"); }
 
-void Player::run() {
+void Participant::run() {
   sendToServer("get_info");
   init(receive());
   sendToServer("ready");

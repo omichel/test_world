@@ -75,5 +75,5 @@ class FrameSkip(Participant):
 
 
 if __name__ == '__main__':
-    player = FrameSkip()
-    player.run()
+    participant = FrameSkip()
+    participant.run()

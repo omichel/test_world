@@ -131,5 +131,5 @@ class CheckVariables(Participant):
 
 
 if __name__ == '__main__':
-    player = CheckVariables()
-    player.run()
+    participant = CheckVariables()
+    participant.run()

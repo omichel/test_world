@@ -1,10 +1,10 @@
-#include "player.hpp"
+#include "participant.hpp"
 
-class RandomWalkPlayer : public Player {
+class RandomWalk : public Participant {
 
 public:
-  RandomWalkPlayer(char **argv) : Player(argv) {}
-  virtual ~RandomWalkPlayer() {}
+  RandomWalk(char **argv) : Participant(argv) {}
+  virtual ~RandomWalk() {}
 
   void init(json info) override {
     mNumberOfRobots = info["number_of_robots"];
@@ -26,7 +26,7 @@ private:
 };
 
 int main(int argc, char **argv) {
-  RandomWalkPlayer *player = new RandomWalkPlayer(argv);
+  RandomWalk *player = new RandomWalk(argv);
   player->run();
   delete player;
   return 0;

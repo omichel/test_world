@@ -46,9 +46,7 @@ class Commentator(Participant):
         # self.max_torque = info['max_torque']
         # self.codewords = info['codewords']
 
-        self.colorChannels = 3
         self.end_of_frame = False
-        # TODO self.image = ReceivedImage(self.resolution, self.colorChannels)
 
         self.printConsole("I am the commentator for this game!")
 
@@ -94,14 +92,14 @@ class Commentator(Participant):
                 received_frame.score[0], received_frame.score[1]))
 
     def finish(self, frame):
-        scoreRed = frame.score[0]
-        scoreBlue = frame.score[1]
-        if (scoreRed > scoreBlue):
-            self.commentate("Team Red won the game with score {} : {}".format(scoreRed, scoreBlue))
-        elif (scoreRed < scoreBlue):
-            self.commentate("Team Blue won the game with score {} : {}".format(scoreBlue, scoreRed))
+        score_red = frame.score[0]
+        score_blue = frame.score[1]
+        if (score_red > score_blue):
+            self.commentate("Team Red won the game with score {} : {}".format(score_red, score_blue))
+        elif (score_red < score_blue):
+            self.commentate("Team Blue won the game with score {} : {}".format(score_blue, score_red))
         else:
-            self.commentate("The game ended in a tie with score {} : {}".format(scoreRed, scoreBlue))
+            self.commentate("The game ended in a tie with score {} : {}".format(score_red, score_blue))
 
         # save your data
         with open(self.datapath + '/result.txt', 'w') as output:

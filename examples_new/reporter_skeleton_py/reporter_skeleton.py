@@ -46,10 +46,7 @@ class Reporter(Participant):
         # self.max_torque = info['max_torque']
         # self.codewords = info['codewords']
 
-        self.colorChannels = 3
         self.end_of_frame = False
-        # TODO
-        # self.image = ReceivedImage(self.resolution, self.colorChannels)
 
         self.paragraphs = []
         self.printConsole("I am the reporter for this game!")
@@ -62,19 +59,19 @@ class Reporter(Participant):
         pass
 
     def finish(self, frame):
-        scoreRed = frame.score[0]
-        scoreBlue = frame.score[1]
-        if (scoreRed > scoreBlue):
-            self.paragraphs.append("Team Red won the game with score {} : {}".format(scoreRed, scoreBlue))
-        elif (scoreRed < scoreBlue):
-            self.paragraphs.append("Team Blue won the game with score {} : {}".format(scoreBlue, scoreRed))
+        score_red = frame.score[0]
+        score_blue = frame.score[1]
+        if (score_red > score_blue):
+            self.paragraphs.append("Team Red won the game with score {} : {}".format(score_red, score_blue))
+        elif (score_red < score_blue):
+            self.paragraphs.append("Team Blue won the game with score {} : {}".format(score_blue, score_red))
         else:
-            self.paragraphs.append("The game ended in a tie with score {} : {}".format(scoreRed, scoreBlue))
+            self.paragraphs.append("The game ended in a tie with score {} : {}".format(score_red, score_blue))
 
         self.paragraphs.append("It was really a great match!")
         self.send_report(self.paragraphs)
 
 
 if __name__ == '__main__':
-    commentator = Reporter()
-    commentator.run()
+    reporter = Reporter()
+    reporter.run()

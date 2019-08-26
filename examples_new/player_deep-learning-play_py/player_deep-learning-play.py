@@ -36,7 +36,7 @@ class DeepLearningPlay(Participant):
         self.max_linear_velocity = info['max_linear_velocity']
         self.colorChannels = 3 # nf
         self.end_of_frame = False
-        self.ImageBuffer = np.zeros((self.resolution[1], self.resolution[0], 3), dtype=np.uint8)
+        self.image_buffer = np.zeros((self.resolution[1], self.resolution[0], 3), dtype=np.uint8)
         self._frame = 0
         self.Q = NeuralNetwork(None, CHECKPOINT, False) # 2nd term: False to start training from scratch, use CHECKPOINT to load a checkpoint
         self.wheels = [0 for _ in range(10)]
@@ -59,7 +59,7 @@ class DeepLearningPlay(Participant):
             self.wheels[2*robot_id + 1] = 0
             # Turn
         elif action_number == 4:
-            self.wheels[2*robot_id] = 0.5
+            self.wheels[2*robot_id] =score_blue 0.5
             self.wheels[2*robot_id + 1] = 75
             # Turn
         elif action_number == 5:
@@ -100,9 +100,9 @@ class DeepLearningPlay(Participant):
             image = decoded.reshape((h, w, 4))
             for j in range(h):
                 for k in range(w):
-                    self.ImageBuffer[j + y, k + x, 0] = image[j, k, 0] # blue channel
-                    self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1] # green channel
-                    self.ImageBuffer[j + y, k + x, 2] = image[j, k, 2] # red channel
+                    self.image_buffer[j + y, k + x, 0] = image[j, k, 0] # blue channel
+                    self.image_buffer[j + y, k + x, 1] = image[j, k, 1] # green channel
+                    self.image_buffer[j + y, k + x, 2] = image[j, k, 2] # red channel
 
     def update(self, frame):
         # comment the next line if you don't need to use the image information
@@ -111,7 +111,7 @@ class DeepLearningPlay(Participant):
         self._frame += 1
 
         # To get the image at the end of each frame use the variable:
-        #self.printConsole(self.image.ImageBuffer)
+        #self.printConsole(self.image.image_buffer)
 
         # Reward
         reward = math.exp(-10*(self.distance(frame.coordinates[Frame.MY_TEAM][0][X], frame.coordinates[Frame.BALL][X], \
@@ -121,7 +121,7 @@ class DeepLearningPlay(Participant):
 
         # If you want to use the image as the input for your network
         # You can use pillow: PIL.Image to get and resize the input frame as follows
-        #img = Image.fromarray((self.image.ImageBuffer/255).astype('uint8'), 'RGB') # Get normalized image as a PIL.Image object
+        #img = Image.fromarray((self.image.image_buffer/255).astype('uint8'), 'RGB') # Get normalized image as a PIL.Image object
         #resized_img = img.resize((NEW_X,NEW_Y))
         #final_img = np.array(resized_img)
 
