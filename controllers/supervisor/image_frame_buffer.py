@@ -19,7 +19,7 @@ class ImageFrameBuffer:
 
     def update_image(self, time):
         ret = []
-        if self.lastUpdateTime is not None and time - self.lastUpdateTime >= 0.001 * self.camera.getSamplingPeriod():
+        if self.lastUpdateTime is not None and time - self.lastUpdateTime <= 0.001 * self.camera.getSamplingPeriod():
             return ret
         self.lastUpdateTime = time
         if self.currentImage is not None:

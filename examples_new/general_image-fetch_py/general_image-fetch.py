@@ -5,7 +5,7 @@
 
 import base64
 import numpy as np
-from PIL import Image
+import cv2
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
@@ -35,8 +35,8 @@ class ImageFetch(Participant):
                     self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1]  # green channel
                     self.ImageBuffer[j + y, k + x, 2] = image[j, k, 0]  # blue channel
         # Uncomment this part to display the image
-        # img = Image.fromarray(self.ImageBuffer, 'RGB')
-        # img.show()
+        # cv2.imshow("image", self.ImageBuffer / 255.0)
+        # cv2.waitKey(1)
 
 
 if __name__ == '__main__':
