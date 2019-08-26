@@ -5,6 +5,10 @@ OBJ_DIR  := $(BUILD)/objects
 TARGET   := player_random-walk
 INCLUDE  := -I../common
 SRC      := player_random-walk.cpp ../common/player.cpp
+ifeq ($(OS),Windows_NT)
+# on Windows, need to link with WinSock2
+LIBRARIES=-lws2_32
+endif
 
 OBJECTS := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
@@ -17,7 +21,7 @@ $(OBJ_DIR)/%.o: %.cpp
 
 $(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) -o $(TARGET) $(OBJECTS) $(LIBRARIES)
 
 .PHONY: all build clean debug release
 
