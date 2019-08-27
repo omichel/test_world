@@ -2,15 +2,31 @@
 
 #include "game.hpp"
 
-#include <arpa/inet.h>
 #include <stdio.h>
+
+#ifdef _WIN32
+#include <winsock.h>
+#else
+#include <arpa/inet.h>  /* definition of inet_ntoa */
 #include <sys/socket.h>
-#include <unistd.h>
+#include <unistd.h> /* definition of close */
+#endif
 
 Player::Player(char **argv) {
   int port = std::stoi(argv[2], nullptr);
   mKey = argv[3];
   mData = argv[4];
+
+  #ifdef _WIN32
+    /* initialize the socket api */
+    WSADATA info;
+
+    int rc = WSAStartup(MAKEWORD(1, 1), &info); /* Winsock 1.1 */
+    if (rc != 0) {
+      fprintf(stderr, "Cannot initialize Winsock\n");
+      exit(0);
+    }
+  #endif
 
   struct sockaddr_in server_addr = {0};
 
@@ -22,21 +38,25 @@ Player::Player(char **argv) {
   // create the socket
   mConnFd = socket(AF_INET, SOCK_STREAM, 0);
   if (mConnFd == -1) {
-    printf("socket creation failed...\n");
+    fprintf(stderr, "Socket creation failed\n");
     exit(0);
   }
 
   // connect the client socket to server socket
   if (connect(mConnFd, (struct sockaddr *)&server_addr, sizeof(server_addr)) !=
       0) {
-    printf("connection with the server failed...\n");
+    fprintf(stderr, "Connection with the server failed\n");
     exit(0);
   }
 }
 
 Player::~Player() {
+#ifdef _WIN32
+  closesocket(mConnFd);
+#else
   if (shutdown(mConnFd, SHUT_RDWR) == -1 || close(mConnFd) == -1)
-    printf("Failed to shutdown connection with the server...\n");
+    fprintf(stderr, "Failed to shutdown connection with the server\n");
+#endif
 }
 
 void Player::sendToServer(std::string message, std::string arguments) {
@@ -45,7 +65,7 @@ void Player::sendToServer(std::string message, std::string arguments) {
     toSend += ", " + arguments;
   toSend += ")";
   const char *toSendString = toSend.c_str();
-  send(mConnFd, (void *)toSendString, strlen(toSendString) * sizeof(char), 0);
+  send(mConnFd, toSendString, strlen(toSendString) * sizeof(char), 0);
 }
 
 json Player::receive() {
@@ -53,7 +73,7 @@ json Player::receive() {
   do {
     char buffer[4097];
     memset(buffer, '\0', sizeof(buffer));
-    read(mConnFd, (void *)buffer, sizeof(buffer) - 1);
+    recv(mConnFd, buffer, sizeof(buffer) - 1, 0);
     completeBuffer += buffer;
   } while (completeBuffer.back() != '}');
   return json::parse(completeBuffer.c_str());
