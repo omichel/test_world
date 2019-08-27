@@ -404,14 +404,14 @@ class GameSupervisor(Supervisor):
             for id in range(constants.NUMBER_OF_ROBOTS):
                 frame['coordinates'][t][id] = [None] * 5
                 pos = self.get_robot_posture(c, id)
-                frame['coordinates'][t][id][0] = pos[0]
-                frame['coordinates'][t][id][1] = pos[1]
-                frame['coordinates'][t][id][2] = pos[2]
+                frame['coordinates'][t][id][0] = pos[0] if team == constants.TEAM_RED else -pos[0]
+                frame['coordinates'][t][id][1] = pos[1] if team == constants.TEAM_RED else -pos[1]
+                frame['coordinates'][t][id][2] = pos[2] if team == constants.TEAM_RED else pos[2] + constants.PI
                 frame['coordinates'][t][id][3] = self.robot[c][id]['active']
                 frame['coordinates'][t][id][4] = self.robot[c][id]['touch']
         frame['coordinates'][2] = [None] * 2
-        frame['coordinates'][2][0] = self.ball_position[0]
-        frame['coordinates'][2][1] = self.ball_position[1]
+        frame['coordinates'][2][0] = self.ball_position[0] if team == constants.TEAM_RED else -self.ball_position[0]
+        frame['coordinates'][2][1] = self.ball_position[1] if team == constants.TEAM_RED else -self.ball_position[1]
         frame['EOF'] = True
         return frame
 
@@ -634,18 +634,18 @@ class GameSupervisor(Supervisor):
                    (abs(y) < constants.PENALTY_AREA_WIDTH / 2):
                     robot_count[team] += 1
         if ball_x < 0:  # the ball is in Team Red's penalty area
-            if robot_count[0] > constants.PA_THRESHOLD_D:
-                self.ball_ownership = 1
+            if robot_count[constants.TEAM_RED] > constants.PA_THRESHOLD_D:
+                self.ball_ownership = constants.TEAM_BLUE
                 return True
-            if robot_count[1] > constants.PA_THRESHOLD_A:
-                self.ball_ownership = 0
+            if robot_count[constants.TEAM_BLUE] > constants.PA_THRESHOLD_A:
+                self.ball_ownership = constants.TEAM_RED
                 return True
         else:  # the ball is in Team Blue's penalty area
-            if robot_count[1] > constants.PA_THRESHOLD_D:
-                self.ball_ownership = 0
+            if robot_count[constants.TEAM_BLUE] > constants.PA_THRESHOLD_D:
+                self.ball_ownership = constants.TEAM_RED
                 return True
-            if robot_count[0] > constants.PA_THRESHOLD_A:
-                self.ball_ownership = 1
+            if robot_count[constants.TEAM_RED] > constants.PA_THRESHOLD_A:
+                self.ball_ownership = constants.TEAM_BLUE
                 return True
         return False
 
