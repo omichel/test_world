@@ -455,7 +455,7 @@ class GameSupervisor(Supervisor):
             message = self.receiver.getData()
             for team in constants.TEAMS:
                 for id in range(constants.NUMBER_OF_ROBOTS):
-                    if message[2 * id + team] == '1':
+                    if message[2 * id + team] == 1:
                         rc[team][id] = True
             self.receiver.nextPacket()
         return rc
@@ -1002,6 +1002,7 @@ class GameSupervisor(Supervisor):
                 for id in range(constants.NUMBER_OF_ROBOTS):
                     if touch[team][id]:
                         self.recent_touch = touch
+                        self.robot[team][id]['touch'] = True
                         break
 
             # check if any of robots has fallen
