@@ -34,9 +34,9 @@ class ImageFetch(Participant):
                     self.ImageBuffer[j + y, k + x, 0] = image[j, k, 2]  # red channel
                     self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1]  # green channel
                     self.ImageBuffer[j + y, k + x, 2] = image[j, k, 0]  # blue channel
-        # Uncomment this part to display the image
-        # cv2.imshow("image", self.ImageBuffer / 255.0)
-        # cv2.waitKey(1)
+        # Display the image
+        cv2.imshow("image", self.ImageBuffer / 255.0)
+        cv2.waitKey(1)
 
 
 if __name__ == '__main__':
