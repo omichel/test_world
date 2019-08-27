@@ -31,9 +31,9 @@ class ImageFetch(Participant):
             image = decoded.reshape((h, w, 4))
             for j in range(h):
                 for k in range(w):
-                    self.ImageBuffer[j + y, k + x, 0] = image[j, k, 2]  # red channel
+                    self.ImageBuffer[j + y, k + x, 0] = image[j, k, 0]  # red channel
                     self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1]  # green channel
-                    self.ImageBuffer[j + y, k + x, 2] = image[j, k, 0]  # blue channel
+                    self.ImageBuffer[j + y, k + x, 2] = image[j, k, 2]  # blue channel
         # Display the image
         cv2.imshow("image", self.ImageBuffer / 255.0)
         cv2.waitKey(1)
