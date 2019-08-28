@@ -306,10 +306,11 @@ class GameSupervisor(Supervisor):
         robot.resetPhysics()
         self.robot[team][id]['active'] = True
         self.robot[team][id]['touch'] = False
-        self.robot[team][id]['fall_time'] = 0
+        self.robot[team][id]['fall_time'] = self.time
         self.robot[team][id]['sentout_time'] = 0
-        self.deadlock_time = self.getTime()
-        self.set_speeds(team, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        self.robot[team][id]['niopa_time'] = self.time  # not_in_opponent_penalty_area time
+        self.robot[team][id]['ipa_time'] = self.time  # goalkeeper in_penalty_area time
+        self.stop_robots()
 
     def reset(self, red_formation, blue_formation):
         # reset the ball
@@ -358,15 +359,8 @@ class GameSupervisor(Supervisor):
                                  constants.ROBOT_FORMATION[formation][id][1] * s,
                                  constants.ROBOT_FORMATION[formation][id][2] + a - constants.PI / 2)
 
-        # reset touch
+        # reset recent touch
         self.recent_touch = [[False] * constants.NUMBER_OF_ROBOTS, [False] * constants.NUMBER_OF_ROBOTS]
-        # reset activeness, fall time and sentout time
-        for t in constants.TEAMS:
-            for id in range(constants.NUMBER_OF_ROBOTS):
-                self.robot[t][id]['active'] = True
-                self.robot[t][id]['fall_time'] = self.time
-                self.robot[t][id]['sentout_time'] = 0
-        self.stop_robots()
         self.deadlock_time = self.time
         # flush touch packet
         self.flush_touch_ball()
@@ -404,14 +398,14 @@ class GameSupervisor(Supervisor):
             for id in range(constants.NUMBER_OF_ROBOTS):
                 frame['coordinates'][t][id] = [None] * 5
                 pos = self.get_robot_posture(c, id)
-                frame['coordinates'][t][id][0] = pos[0]
-                frame['coordinates'][t][id][1] = pos[1]
-                frame['coordinates'][t][id][2] = pos[2]
+                frame['coordinates'][t][id][0] = pos[0] if team == constants.TEAM_RED else -pos[0]
+                frame['coordinates'][t][id][1] = pos[1] if team == constants.TEAM_RED else -pos[1]
+                frame['coordinates'][t][id][2] = pos[2] if team == constants.TEAM_RED else pos[2] + constants.PI
                 frame['coordinates'][t][id][3] = self.robot[c][id]['active']
                 frame['coordinates'][t][id][4] = self.robot[c][id]['touch']
         frame['coordinates'][2] = [None] * 2
-        frame['coordinates'][2][0] = self.ball_position[0]
-        frame['coordinates'][2][1] = self.ball_position[1]
+        frame['coordinates'][2][0] = self.ball_position[0] if team == constants.TEAM_RED else -self.ball_position[0]
+        frame['coordinates'][2][1] = self.ball_position[1] if team == constants.TEAM_RED else -self.ball_position[1]
         frame['EOF'] = True
         return frame
 
@@ -455,7 +449,7 @@ class GameSupervisor(Supervisor):
             message = self.receiver.getData()
             for team in constants.TEAMS:
                 for id in range(constants.NUMBER_OF_ROBOTS):
-                    if message[2 * id + team] == '1':
+                    if message[2 * id + team] == 1:
                         rc[team][id] = True
             self.receiver.nextPacket()
         return rc
@@ -634,18 +628,18 @@ class GameSupervisor(Supervisor):
                    (abs(y) < constants.PENALTY_AREA_WIDTH / 2):
                     robot_count[team] += 1
         if ball_x < 0:  # the ball is in Team Red's penalty area
-            if robot_count[0] > constants.PA_THRESHOLD_D:
-                self.ball_ownership = 1
+            if robot_count[constants.TEAM_RED] > constants.PA_THRESHOLD_D:
+                self.ball_ownership = constants.TEAM_BLUE
                 return True
-            if robot_count[1] > constants.PA_THRESHOLD_A:
-                self.ball_ownership = 0
+            if robot_count[constants.TEAM_BLUE] > constants.PA_THRESHOLD_A:
+                self.ball_ownership = constants.TEAM_RED
                 return True
         else:  # the ball is in Team Blue's penalty area
-            if robot_count[1] > constants.PA_THRESHOLD_D:
-                self.ball_ownership = 0
+            if robot_count[constants.TEAM_BLUE] > constants.PA_THRESHOLD_D:
+                self.ball_ownership = constants.TEAM_RED
                 return True
-            if robot_count[0] > constants.PA_THRESHOLD_A:
-                self.ball_ownership = 1
+            if robot_count[constants.TEAM_RED] > constants.PA_THRESHOLD_A:
+                self.ball_ownership = constants.TEAM_BLUE
                 return True
         return False
 
@@ -920,7 +914,8 @@ class GameSupervisor(Supervisor):
                 command_line = []
                 if exe.endswith('.py'):
                     os.environ['PYTHONPATH'] += os.pathsep + os.path.join(os.getcwd(), 'player_py')
-                    command_line.append('python')
+                    if sys.platform == 'win32':
+                        command_line.append('python')
                 command_line.append(exe)
                 command_line.append(constants.SERVER_IP)
                 command_line.append(str(constants.SERVER_PORT))
@@ -971,6 +966,7 @@ class GameSupervisor(Supervisor):
                     self.stop_robots()
                     if self.step(constants.WAIT_END_MS) == -1:
                         break
+                    self.tcp_server.spin(self)  # leave time to receive report
                     if not repeat:
                         return
                 else:  # second half starts with a kickoff by the blue team (1)
@@ -995,13 +991,13 @@ class GameSupervisor(Supervisor):
             self.publish_current_frame()
             self.reset_reason = Game.NONE
 
-            # if any of the robots has touched the ball at this frame, update self.recent_touch
+            # update touch statuses of robots
             touch = self.get_robot_touch_ball()
             for team in constants.TEAMS:
                 for id in range(constants.NUMBER_OF_ROBOTS):
-                    if touch[team][id]:
+                    self.robot[team][id]['touch'] = touch[team][id]
+                    if touch[team][id]:  # if any of the robots has touched the ball at this frame, update touch status
                         self.recent_touch = touch
-                        break
 
             # check if any of robots has fallen
             for team in constants.TEAMS:

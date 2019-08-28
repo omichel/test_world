@@ -2,15 +2,31 @@
 
 #include "game.hpp"
 
-#include <arpa/inet.h>
 #include <stdio.h>
+
+#ifdef _WIN32
+#include <winsock.h>
+#else
+#include <arpa/inet.h>  /* definition of inet_ntoa */
 #include <sys/socket.h>
-#include <unistd.h>
+#include <unistd.h> /* definition of close */
+#endif
 
 Participant::Participant(char **argv) {
   int port = std::stoi(argv[2], nullptr);
   key = argv[3];
   datapath = argv[4];
+
+  #ifdef _WIN32
+    /* initialize the socket api */
+    WSADATA info;
+
+    int rc = WSAStartup(MAKEWORD(1, 1), &info); /* Winsock 1.1 */
+    if (rc != 0) {
+      fprintf(stderr, "Cannot initialize Winsock\n");
+      exit(0);
+    }
+  #endif
 
   struct sockaddr_in server_addr = {0};
 
@@ -29,14 +45,18 @@ Participant::Participant(char **argv) {
   // connect the client socket to server socket
   if (connect(conn_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) !=
       0) {
-    printf("connection with the server failed...\n");
+    fprintf(stderr, "Connection with the server failed\n");
     exit(0);
   }
 }
 
 Participant::~Participant() {
-  if (shutdown(conn_fd, SHUT_RDWR) == -1 || close(conn_fd) == -1)
-    printf("Failed to shutdown connection with the server...\n");
+#ifdef _WIN32
+  closesocket(mConnFd);
+#else
+  if (shutdown(mConnFd, SHUT_RDWR) == -1 || close(mConnFd) == -1)
+    fprintf(stderr, "Failed to shutdown connection with the server\n");
+#endif
 }
 
 void Participant::send_to_server(std::string message, std::string arguments) {
@@ -53,7 +73,7 @@ json Participant::receive() {
   do {
     char buffer[4097];
     memset(buffer, '\0', sizeof(buffer));
-    read(conn_fd, (void *)buffer, sizeof(buffer) - 1);
+    recv(conn_fd, buffer, sizeof(buffer) - 1, 0);
     completeBuffer += buffer;
   } while (completeBuffer.back() != '}');
   return json::parse(completeBuffer.c_str());

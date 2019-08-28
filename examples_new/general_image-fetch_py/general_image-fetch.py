@@ -3,6 +3,9 @@
 # Author(s): Luiz Felipe Vecchietti, Chansol Hong, Inbae Jeong
 # Maintainer: Chansol Hong (cshong@rit.kaist.ac.kr)
 
+import base64
+import numpy as np
+
 import cv2
 import os
 import sys
@@ -12,9 +15,6 @@ try:
 except ImportError as err:
     print('general_image-fetch: \'participant\' module cannot be imported:', err)
     raise
-
-import base64
-import numpy as np
 
 class ImageFetch(Participant):
     def init(self, info):
