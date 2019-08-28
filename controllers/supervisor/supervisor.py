@@ -130,7 +130,7 @@ class TcpServer:
 class GameSupervisor(Supervisor):
     def __init__(self):
         Supervisor.__init__(self)
-        self.timeStep = 50
+        self.timeStep = constants.PERIOD_MS
         self.report = None
 
         self.receiver = self.getReceiver(constants.NAME_RECV)
