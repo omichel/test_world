@@ -451,7 +451,6 @@ class GameSupervisor(Supervisor):
                 for id in range(constants.NUMBER_OF_ROBOTS):
                     if message[2 * id + team] == 1:
                         rc[team][id] = True
-                        print("Robot [" + str(team) + "," + str(id) + "] touch received");
             self.receiver.nextPacket()
         return rc
 

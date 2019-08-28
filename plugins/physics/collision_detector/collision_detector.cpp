@@ -86,8 +86,6 @@ void webots_physics_step_end() {
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < ROBOT_COUNT; j++) {
       collision_packet[i+2*j] = (char)robot_collision[i][j];
-      if (robot_collision[i][j])
-        dWebotsConsolePrintf("Robot[%d, %d] touch", i, j);
     }
   }
 
