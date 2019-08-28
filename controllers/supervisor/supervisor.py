@@ -208,11 +208,12 @@ class GameSupervisor(Supervisor):
         for t in range(constants.NUM_COMMENTS):  # fill with dummies
             self.comments_.append('')
 
-    def step(self, timeStep):
+    def step(self, timeStep, runTimer=False):
         for i in range(0, timeStep, self.basicTimeStep):
             if Supervisor.step(self, self.basicTimeStep) == -1:
                 return -1
-            self.time += self.basicTimeStep
+            if runTimer:
+                self.time += self.basicTimeStep
             self.update_label()
 
     def get_role(self, rpc):
@@ -1374,7 +1375,7 @@ class GameSupervisor(Supervisor):
                     self.game_state = Game.STATE_DEFAULT
                     self.lock_all_robots(False)
                 self.deadlock_time = self.time
-            if self.step(self.timeStep) == -1:
+            if self.step(self.timeStep, runTimer=True) == -1:
                 break
 
         if record:
