@@ -997,7 +997,6 @@ class GameSupervisor(Supervisor):
                     self.robot[team][id]['touch'] = touch[team][id]
                     if touch[team][id]:  # if any of the robots has touched the ball at this frame, update touch status
                         self.recent_touch = touch
-                        break
 
             # check if any of robots has fallen
             for team in constants.TEAMS:
