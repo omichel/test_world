@@ -210,7 +210,8 @@ class GameSupervisor(Supervisor):
 
     def step(self, timeStep):
         for i in range(0, timeStep, self.basicTimeStep):
-            Supervisor.step(self, self.basicTimeStep)
+            if Supervisor.step(self, self.basicTimeStep) == -1:
+                return -1
             self.time += self.basicTimeStep
             self.update_label()
 
