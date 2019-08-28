@@ -306,10 +306,11 @@ class GameSupervisor(Supervisor):
         robot.resetPhysics()
         self.robot[team][id]['active'] = True
         self.robot[team][id]['touch'] = False
-        self.robot[team][id]['fall_time'] = 0
+        self.robot[team][id]['fall_time'] = self.time
         self.robot[team][id]['sentout_time'] = 0
-        self.deadlock_time = self.getTime()
-        self.set_speeds(team, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        self.robot[team][id]['niopa_time'] = self.time  # not_in_opponent_penalty_area time
+        self.robot[team][id]['ipa_time'] = self.time  # goalkeeper in_penalty_area time
+        self.stop_robots()
 
     def reset(self, red_formation, blue_formation):
         # reset the ball
@@ -358,15 +359,8 @@ class GameSupervisor(Supervisor):
                                  constants.ROBOT_FORMATION[formation][id][1] * s,
                                  constants.ROBOT_FORMATION[formation][id][2] + a - constants.PI / 2)
 
-        # reset touch
+        # reset recent touch
         self.recent_touch = [[False] * constants.NUMBER_OF_ROBOTS, [False] * constants.NUMBER_OF_ROBOTS]
-        # reset activeness, fall time and sentout time
-        for t in constants.TEAMS:
-            for id in range(constants.NUMBER_OF_ROBOTS):
-                self.robot[t][id]['active'] = True
-                self.robot[t][id]['fall_time'] = self.time
-                self.robot[t][id]['sentout_time'] = 0
-        self.stop_robots()
         self.deadlock_time = self.time
         # flush touch packet
         self.flush_touch_ball()
@@ -455,7 +449,7 @@ class GameSupervisor(Supervisor):
             message = self.receiver.getData()
             for team in constants.TEAMS:
                 for id in range(constants.NUMBER_OF_ROBOTS):
-                    if message[2 * id + team] == '1':
+                    if message[2 * id + team] == 1:
                         rc[team][id] = True
             self.receiver.nextPacket()
         return rc
@@ -996,13 +990,13 @@ class GameSupervisor(Supervisor):
             self.publish_current_frame()
             self.reset_reason = Game.NONE
 
-            # if any of the robots has touched the ball at this frame, update self.recent_touch
+            # update touch statuses of robots
             touch = self.get_robot_touch_ball()
             for team in constants.TEAMS:
                 for id in range(constants.NUMBER_OF_ROBOTS):
-                    if touch[team][id]:
+                    self.robot[team][id]['touch'] = touch[team][id]
+                    if touch[team][id]:  # if any of the robots has touched the ball at this frame, update touch status
                         self.recent_touch = touch
-                        break
 
             # check if any of robots has fallen
             for team in constants.TEAMS:
