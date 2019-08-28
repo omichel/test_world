@@ -990,17 +990,12 @@ class GameSupervisor(Supervisor):
             self.publish_current_frame()
             self.reset_reason = Game.NONE
 
-
-            touch = self.get_robot_touch_ball()
             # update touch statuses of robots
+            touch = self.get_robot_touch_ball()
             for team in constants.TEAMS:
                 for id in range(constants.NUMBER_OF_ROBOTS):
                     self.robot[team][id]['touch'] = touch[team][id]
-
-            # if any of the robots has touched the ball at this frame, update touch status
-            for team in constants.TEAMS:
-                for id in range(constants.NUMBER_OF_ROBOTS):
-                    if touch[team][id]:
+                    if touch[team][id]:  # if any of the robots has touched the ball at this frame, update touch status
                         self.recent_touch = touch
                         break
 
