@@ -966,6 +966,7 @@ class GameSupervisor(Supervisor):
                     self.stop_robots()
                     if self.step(constants.WAIT_END_MS) == -1:
                         break
+                    self.tcp_server.spin(self)  # leave time to receive report
                     if not repeat:
                         return
                 else:  # second half starts with a kickoff by the blue team (1)
