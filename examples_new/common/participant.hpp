@@ -11,7 +11,7 @@ public:
   Participant(char **argv);
   virtual ~Participant();
 
-  void setSpeeds(std::vector<double> speeds);
+  void set_speeds(std::vector<double> speeds);
   void run();
 
   // These methods should be overrriden
@@ -21,12 +21,12 @@ public:
   virtual void finish();
 
 private:
-  void sendToServer(std::string message, std::string arguments = "");
+  void send_to_server(std::string message, std::string arguments = "");
   json receive();
 
-  std::string mKey;
-  std::string mData;
-  int mConnFd;
+  std::string key;
+  std::string datapath;
+  int conn_fd;
 };
 
 #endif // PARTICIPANT_HPP
