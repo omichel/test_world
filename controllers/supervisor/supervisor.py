@@ -130,7 +130,8 @@ class TcpServer:
 class GameSupervisor(Supervisor):
     def __init__(self):
         Supervisor.__init__(self)
-        self.timeStep = 10
+        self.basicTimeStep = int(self.getBasicTimeStep())
+        self.timeStep = constants.PERIOD_MS
         self.report = None
 
         self.receiver = self.getReceiver(constants.NAME_RECV)
@@ -206,6 +207,14 @@ class GameSupervisor(Supervisor):
         self.comments_ = collections.deque(maxlen=constants.NUM_COMMENTS)
         for t in range(constants.NUM_COMMENTS):  # fill with dummies
             self.comments_.append('')
+
+    def step(self, timeStep, runTimer=False):
+        for i in range(0, timeStep, self.basicTimeStep):
+            if Supervisor.step(self, self.basicTimeStep) == -1:
+                return -1
+            if runTimer:
+                self.time += self.basicTimeStep
+            self.update_label()
 
     def get_role(self, rpc):
         key = get_key(rpc)
@@ -927,7 +936,6 @@ class GameSupervisor(Supervisor):
         print('Waiting for player to be ready...')
 
         while True:
-            self.update_label()
             sys.stdout.flush()
             self.tcp_server.spin(self)
             if not self.started:
@@ -1362,9 +1370,8 @@ class GameSupervisor(Supervisor):
                     self.game_state = Game.STATE_DEFAULT
                     self.lock_all_robots(False)
                 self.deadlock_time = self.time
-            if self.step(self.timeStep) == -1:
+            if self.step(self.timeStep, runTimer=True) == -1:
                 break
-            self.time += self.timeStep
 
         if record:
             # Stop game recording
