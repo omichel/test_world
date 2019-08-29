@@ -1,9 +1,9 @@
 #include "participant.hpp"
 
-class Player : public Participant {
+class Player : public aiwc::Participant {
 
 public:
-  Player(char **argv) : Participant(argv) {}
+  Player(char **argv) : aiwc::Participant(argv) {}
   virtual ~Player() {}
 
   void init(json info) override {

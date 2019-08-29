@@ -5,28 +5,32 @@
 
 using namespace nlohmann;
 
-class Participant {
+namespace aiwc {
 
-public:
-  Participant(char **argv);
-  virtual ~Participant();
+  class Participant {
 
-  void set_speeds(std::vector<double> speeds);
-  void run();
+  public:
+    Participant(char **argv);
+    virtual ~Participant();
 
-  // These methods should be overrriden
-  virtual void init(json info);
-  virtual bool check_frame(json frame);
-  virtual void update(json frame);
-  virtual void finish();
+    void set_speeds(std::vector<double> speeds);
+    void run();
 
-private:
-  void send_to_server(std::string message, std::string arguments = "");
-  json receive();
+    // These methods should be overrriden
+    virtual void init(json info);
+    virtual bool check_frame(json frame);
+    virtual void update(json frame);
+    virtual void finish();
 
-  std::string key;
-  std::string datapath;
-  int conn_fd;
-};
+  private:
+    void send_to_server(std::string message, std::string arguments = "");
+    json receive();
+
+    std::string key;
+    std::string datapath;
+    int conn_fd;
+  };
+
+} // namespace aiwc
 
 #endif // PARTICIPANT_HPP

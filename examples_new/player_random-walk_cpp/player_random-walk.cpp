@@ -1,9 +1,9 @@
 #include "participant.hpp"
 
-class RandomWalk : public Participant {
+class RandomWalk : public aiwc::Participant {
 
 public:
-  RandomWalk(char **argv) : Participant(argv) {}
+  RandomWalk(char **argv) : aiwc::Participant(argv) {}
   virtual ~RandomWalk() {}
 
   void init(json info) override {
@@ -21,7 +21,7 @@ public:
   }
 
   void finish() override {
-    
+
   }
 
 private:
