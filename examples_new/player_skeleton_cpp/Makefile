@@ -1,10 +1,10 @@
 CXX      := g++
-CXXFLAGS := -pedantic-errors -Wall -std=c++11
+CXXFLAGS := -pedantic-errors -Wall -std=c++14
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
-TARGET   := player_random-walk
+TARGET   := player_skeleton
 INCLUDE  := -I../common
-SRC      := player_random-walk.cpp ../common/player.cpp
+SRC      := player_skeleton.cpp ../common/participant.cpp
 
 OBJECTS := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 

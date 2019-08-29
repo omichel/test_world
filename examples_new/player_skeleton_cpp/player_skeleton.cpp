@@ -1,31 +1,35 @@
 #include "participant.hpp"
 
-class player : public Participant {
+class Player : public Participant {
 
 public:
-  player(char **argv) : Participant(argv) {}
-  virtual ~player() {}
+  Player(char **argv) : Participant(argv) {}
+  virtual ~Player() {}
 
   void init(json info) override {
-    mNumberOfRobots = info["number_of_robots"];
-    for (int i = 0; i < mNumberOfRobots; ++i)
-      mMaxSpeed.push_back(info["max_linear_velocity"][i]);
+    number_of_robots = info["number_of_robots"];
+    for (int i = 0; i < number_of_robots; ++i)
+      max_linear_velocity.push_back(info["max_linear_velocity"][i]);
   }
 
   void update(json frame) override {
     std::vector<double> speeds;
-    for (int i = 0; i < 2 * mNumberOfRobots; ++i)
-      speeds.push_back(mMaxSpeed[i / 2]);
+    for (int i = 0; i < 2 * number_of_robots; ++i)
+      speeds.push_back(max_linear_velocity[i / 2]);
     set_speeds(speeds);
   }
 
+  void finish() override {
+
+  }
+
 private:
-  std::vector<double> mMaxSpeed;
-  int mNumberOfRobots;
+  std::vector<double> max_linear_velocity;
+  int number_of_robots;
 };
 
 int main(int argc, char **argv) {
-  player *participant = new player(argv);
+  Player *participant = new Player(argv);
   participant->run();
   delete participant;
   return 0;

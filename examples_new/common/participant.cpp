@@ -52,9 +52,9 @@ Participant::Participant(char **argv) {
 
 Participant::~Participant() {
 #ifdef _WIN32
-  closesocket(mConnFd);
+  closesocket(conn_fd);
 #else
-  if (shutdown(mConnFd, SHUT_RDWR) == -1 || close(mConnFd) == -1)
+  if (shutdown(conn_fd, SHUT_RDWR) == -1 || close(conn_fd) == -1)
     fprintf(stderr, "Failed to shutdown connection with the server\n");
 #endif
 }
