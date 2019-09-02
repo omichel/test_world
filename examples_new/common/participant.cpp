@@ -114,6 +114,16 @@ namespace aiwc {
     frame.half_passed = raw_frame["half_passed"];
 
     // subimages
+    for (unsigned int i = 0; i < raw_frame["subimages"].size(); i++) {
+      aiwc::subimage subimage = {
+        raw_frame["subimages"][i][0],
+        raw_frame["subimages"][i][1],
+        raw_frame["subimages"][i][2],
+        raw_frame["subimages"][i][3],
+        raw_frame["subimages"][i][4]
+      };
+      frame.subimages.push_back(subimage);
+    }
 
     // each team
     for (int i = 0; i < 2; i++) {
