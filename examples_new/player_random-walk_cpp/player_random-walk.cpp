@@ -1,5 +1,7 @@
 #include "participant.hpp"
 
+#include <iostream>
+
 class RandomWalk : public aiwc::Participant {
 
 public:
@@ -13,7 +15,7 @@ public:
     // you can initialize some custom variables here
   }
 
-  void update(json frame) override {
+  void update(aiwc::game_frame frame) override {
     std::vector<double> speeds;
     for (unsigned int i = 0; i < 2 * info.number_of_robots; ++i)
       speeds.push_back(2.0 * info.max_linear_velocity[i / 2] *

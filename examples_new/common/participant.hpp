@@ -24,7 +24,7 @@ namespace aiwc {
 
   struct aiwc_coordinates
   {
-    std::array<std::vector<robot_coordinate>, 2> robots;
+    std::array<std::array<robot_coordinate, 5>, 2> robots;
     ball_coordinate ball;
   };
 
@@ -51,7 +51,7 @@ namespace aiwc {
 
     std::array<std::size_t, 2> resolution; // [x, y]
     std::size_t number_of_robots;
-    std::vector<std::size_t> codewords;
+    std::array<std::size_t, 5> codewords;
     double game_time;
   };
 
@@ -106,6 +106,9 @@ namespace aiwc {
   };
 
   class Participant {
+  protected:
+    enum { MYTEAM, OPPONENT, ATEAM = MYTEAM, BTEAM = OPPONENT };
+    enum { X, Y, TH, ACTIVE, TOUCH };
 
   public:
     Participant(char **argv);
@@ -116,8 +119,8 @@ namespace aiwc {
 
     // These methods should be overrriden
     virtual void init();
-    virtual bool check_frame(json frame);
-    virtual void update(json frame);
+    virtual bool check_frame(json raw_frame);
+    virtual void update(aiwc::game_frame frame);
     virtual void finish();
 
     aiwc::game_info info;
@@ -126,7 +129,7 @@ namespace aiwc {
     void send_to_server(std::string message, std::string arguments = "");
     json receive();
     void parse_game_info(json raw_info);
-    aiwc::game_frame parse_frame(json frame);
+    aiwc::game_frame parse_frame(json raw_frame);
 
     std::string key;
     std::string datapath;

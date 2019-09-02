@@ -80,36 +80,59 @@ namespace aiwc {
   }
 
   void Participant::parse_game_info(json raw_info) {
+    info.field = raw_info["field"];
+    info.goal = raw_info["goal"];
+    info.penalty_area = raw_info["penalty_area"];
+    info.goal_area = raw_info["goal_area"];
+
     info.ball_radius = raw_info["ball_radius"];
     info.ball_mass = raw_info["ball_mass"];
+
+    info.robot_size = raw_info["robot_size"];
+    info.robot_height = raw_info["robot_height"];
+    info.axle_length= raw_info["axle_length"];
+    info.robot_body_mass= raw_info["robot_body_mass"];
+    info.wheel_radius = raw_info["wheel_radius"];
+    info.wheel_mass= raw_info["wheel_mass"];
+    info.max_linear_velocity= raw_info["max_linear_velocity"];
+    info.max_torque = raw_info["max_torque"];
+
+    info.resolution = raw_info["resolution"];
     info.number_of_robots = raw_info["number_of_robots"];
+    info.codewords = raw_info["codewords"];
     info.game_time = raw_info["game_time"];
-
-    for (int i = 0; i < 2; i++) {
-      info.field[i] = raw_info["field"][i];
-      info.goal[i] = raw_info["goal"][i];
-      info.penalty_area[i] = raw_info["penalty_area"][i];
-      info.goal_area[i] = raw_info["goal_area"][i];
-      info.resolution[i] = raw_info["resolution"][i];
-    }
-
-    for (int i = 0; i < 5; i++) {
-      info.robot_size[i] = raw_info["robot_size"][i];
-      info.robot_height[i] = raw_info["robot_height"][i];
-      info.axle_length[i] = raw_info["axle_length"][i];
-      info.robot_body_mass[i] = raw_info["robot_body_mass"][i];
-      info.wheel_radius[i] = raw_info["wheel_radius"][i];
-      info.wheel_mass[i] = raw_info["wheel_mass"][i];
-      info.max_linear_velocity[i] = raw_info["max_linear_velocity"][i];
-      info.max_torque[i] = raw_info["max_torque"][i];
-      info.codewords.push_back(raw_info["codewords"][i]);
-    }
   }
 
-  aiwc::game_frame Participant::parse_frame(json frame) {
-    std::cout << "I'm frame" << std::endl;
-    aiwc::game_frame f;
-    return f;
+  aiwc::game_frame Participant::parse_frame(json raw_frame) {
+    aiwc::game_frame frame;
+
+    frame.time = raw_frame["time"];
+    frame.score = raw_frame["score"];
+    frame.reset_reason = raw_frame["reset_reason"];
+    frame.game_state = raw_frame["game_state"];
+    frame.ball_ownership = raw_frame["ball_ownership"];
+    frame.half_passed = raw_frame["half_passed"];
+
+    // subimages
+
+    // each team
+    for (int i = 0; i < 2; i++) {
+      // each robot
+      for (int j = 0; j < 5; j++) {
+        // robot coordinate
+        frame.coordinates.robots[i][j].x = raw_frame["coordinates"][i][j][X];
+        frame.coordinates.robots[i][j].y = raw_frame["coordinates"][i][j][Y];
+        frame.coordinates.robots[i][j].th = raw_frame["coordinates"][i][j][TH];
+        frame.coordinates.robots[i][j].active = raw_frame["coordinates"][i][j][ACTIVE];
+        frame.coordinates.robots[i][j].touch = raw_frame["coordinates"][i][j][TOUCH];
+      }
+    }
+
+    // ball coordinate
+    frame.coordinates.ball.x = raw_frame["coordinates"][2][X];
+    frame.coordinates.ball.y = raw_frame["coordinates"][2][Y];
+
+    return frame;
   }
 
   void Participant::set_speeds(std::vector<double> speeds) {
@@ -120,16 +143,16 @@ namespace aiwc {
     send_to_server("set_speeds", arguments);
   }
 
-  bool Participant::check_frame(json frame) {
-    if (frame.find("reset_reason") != frame.end() &&
-        frame["reset_reason"] == GAME_END)
+  bool Participant::check_frame(json raw_frame) {
+    if (raw_frame.find("reset_reason") != raw_frame.end() &&
+        raw_frame["reset_reason"] == GAME_END)
       return false;
     return true;
   }
 
   void Participant::init() { std::cout << "init() method called... " << std::endl; }
 
-  void Participant::update(json frame) { std::cout << "update() method called..." << std::endl; }
+  void Participant::update(aiwc::game_frame frame) { std::cout << "update() method called..." << std::endl; }
 
   void Participant::finish() { std::cout << "finish() method called..." << std::endl; }
 
@@ -144,10 +167,11 @@ namespace aiwc {
     send_to_server("ready");
 
     while (true) {
-      json frame = receive();
-      if (!frame.empty()) {
-        if (check_frame(frame)) {// return false if we need to quit
-          parse_frame(frame);
+      json raw_frame = receive();
+      if (!raw_frame.empty()) {
+        if (check_frame(raw_frame)) { // return false if we need to quit
+          // parse the received json into game_frame format
+          auto frame = parse_frame(raw_frame);
           update(frame);
         }
         else
