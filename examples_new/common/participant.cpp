@@ -81,6 +81,33 @@ namespace aiwc {
     return json::parse(completeBuffer.c_str());
   }
 
+  void Participant::parse_game_info(json raw_info) {
+    info.ball_radius = raw_info["ball_radius"];
+    info.ball_mass = raw_info["ball_mass"];
+    info.number_of_robots = raw_info["number_of_robots"];
+    info.game_time = raw_info["game_time"];
+
+    for (int i = 0; i < 2; i++) {
+      info.field[i] = raw_info["field"][i];
+      info.goal[i] = raw_info["goal"][i];
+      info.penalty_area[i] = raw_info["penalty_area"][i];
+      info.goal_area[i] = raw_info["goal_area"][i];
+      info.resolution[i] = raw_info["resolution"][i];
+    }
+
+    for (int i = 0; i < 5; i++) {
+      info.robot_size[i] = raw_info["robot_size"][i];
+      info.robot_height[i] = raw_info["robot_height"][i];
+      info.axle_length[i] = raw_info["axle_length"][i];
+      info.robot_body_mass[i] = raw_info["robot_body_mass"][i];
+      info.wheel_radius[i] = raw_info["wheel_radius"][i];
+      info.wheel_mass[i] = raw_info["wheel_mass"][i];
+      info.max_linear_velocity[i] = raw_info["max_linear_velocity"][i];
+      info.max_torque[i] = raw_info["max_torque"][i];
+      info.codewords.push_back(raw_info["codewords"][i]);
+    }
+  }
+
   void Participant::set_speeds(std::vector<double> speeds) {
     std::string arguments = "";
     for (unsigned i = 0; i < speeds.size(); i++)
@@ -106,32 +133,7 @@ namespace aiwc {
     send_to_server("get_info");
 
     // parse the received json into game_info format
-    json raw_info = receive();
-
-    info.ball_radius = raw_info["ball_radius"];
-    info.ball_mass = raw_info["ball_mass"];
-    info.number_of_robots = raw_info["number_of_robots"];
-    info.game_time = raw_info["game_time"];
-
-    for (int i = 0; i < 2; i++) {
-      info.field[i] = raw_info["field"][i];
-      info.goal[i] = raw_info["goal"][i];
-      info.penalty_area[i] = raw_info["penalty_area"][i];
-      info.goal_area[i] = raw_info["goal_area"][i];
-      info.resolution[i] = raw_info["resolution"][i];
-    }
-
-    for (int i = 0; i < 5; i++) {
-      info.robot_size[i] = raw_info["robot_size"][i];
-      info.robot_height[i] = raw_info["robot_height"][i];
-      info.axle_length[i] = raw_info["axle_length"][i];
-      info.robot_body_mass[i] = raw_info["robot_body_mass"][i];
-      info.wheel_radius[i] = raw_info["wheel_radius"][i];
-      info.wheel_mass[i] = raw_info["wheel_mass"][i];
-      info.max_linear_velocity[i] = raw_info["max_linear_velocity"][i];
-      info.max_torque[i] = raw_info["max_torque"][i];
-      info.codewords.push_back(raw_info["codewords"][i]);
-    }
+    parse_game_info(receive());
 
     init();
 

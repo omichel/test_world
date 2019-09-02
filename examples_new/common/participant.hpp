@@ -125,6 +125,7 @@ namespace aiwc {
   private:
     void send_to_server(std::string message, std::string arguments = "");
     json receive();
+    void parse_game_info(json raw_info);
 
     std::string key;
     std::string datapath;
