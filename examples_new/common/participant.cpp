@@ -1,8 +1,6 @@
 #include "participant.hpp"
 
-#include "game.hpp"
-
-#include <cstdio>
+#include <iostream>
 
 #ifdef _WIN32
 #include <winsock.h>
@@ -25,7 +23,7 @@ namespace aiwc {
 
       int rc = WSAStartup(MAKEWORD(1, 1), &info); /* Winsock 1.1 */
       if (rc != 0) {
-        fprintf(stderr, "Cannot initialize Winsock\n");
+        std::cerr << "Cannot initialize Winsock" << std::endl;
         exit(0);
       }
     #endif
@@ -40,14 +38,14 @@ namespace aiwc {
     // create the socket
     conn_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (conn_fd == -1) {
-      printf("socket creation failed...\n");
+      std::cout << "socket creation failed..." << std::endl;
       exit(0);
     }
 
     // connect the client socket to server socket
     if (connect(conn_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) !=
         0) {
-      fprintf(stderr, "Connection with the server failed\n");
+      std::cerr << "Connection with the server failed" << std::endl;
       exit(0);
     }
   }
@@ -57,7 +55,7 @@ namespace aiwc {
     closesocket(conn_fd);
   #else
     if (shutdown(conn_fd, SHUT_RDWR) == -1 || close(conn_fd) == -1)
-      fprintf(stderr, "Failed to shutdown connection with the server\n");
+      std::cerr << "Failed to shutdown connection with the server" << std::endl;
   #endif
   }
 
@@ -108,6 +106,12 @@ namespace aiwc {
     }
   }
 
+  aiwc::game_frame Participant::parse_frame(json frame) {
+    std::cout << "I'm frame" << std::endl;
+    aiwc::game_frame f;
+    return f;
+  }
+
   void Participant::set_speeds(std::vector<double> speeds) {
     std::string arguments = "";
     for (unsigned i = 0; i < speeds.size(); i++)
@@ -118,16 +122,16 @@ namespace aiwc {
 
   bool Participant::check_frame(json frame) {
     if (frame.find("reset_reason") != frame.end() &&
-        frame["reset_reason"] == RESET_GAME_END)
+        frame["reset_reason"] == GAME_END)
       return false;
     return true;
   }
 
-  void Participant::init() { printf("init() method called...\n"); }
+  void Participant::init() { std::cout << "init() method called... " << std::endl; }
 
-  void Participant::update(json frame) { printf("update() method called...\n"); }
+  void Participant::update(json frame) { std::cout << "update() method called..." << std::endl; }
 
-  void Participant::finish() { printf("finish() method called...\n"); }
+  void Participant::finish() { std::cout << "finish() method called..." << std::endl; }
 
   void Participant::run() {
     send_to_server("get_info");
@@ -142,8 +146,10 @@ namespace aiwc {
     while (true) {
       json frame = receive();
       if (!frame.empty()) {
-        if (check_frame(frame)) // return false if we need to quit
+        if (check_frame(frame)) {// return false if we need to quit
+          parse_frame(frame);
           update(frame);
+        }
         else
           break;
       } else

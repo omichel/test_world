@@ -91,7 +91,7 @@ namespace aiwc {
     std::string base64;
   };
 
-  struct frame
+  struct game_frame
   {
     double time;
     std::array<std::size_t, 2> score; // [my team, opponent] for player, [a team, b team] for commentator
@@ -126,6 +126,7 @@ namespace aiwc {
     void send_to_server(std::string message, std::string arguments = "");
     json receive();
     void parse_game_info(json raw_info);
+    aiwc::game_frame parse_frame(json frame);
 
     std::string key;
     std::string datapath;
