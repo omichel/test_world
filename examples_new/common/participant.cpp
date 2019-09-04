@@ -65,7 +65,7 @@ namespace aiwc {
       toSend += ", " + arguments;
     toSend += ")";
     const char *toSendString = toSend.c_str();
-    send(conn_fd, (void *)toSendString, strlen(toSendString) * sizeof(char), 0);
+    send(conn_fd, toSendString, strlen(toSendString) * sizeof(char), 0);
   }
 
   json Participant::receive() {
