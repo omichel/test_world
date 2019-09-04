@@ -114,22 +114,26 @@ namespace aiwc {
     Participant(char **argv);
     virtual ~Participant();
 
-    void set_speeds(std::vector<double> speeds);
     void run();
 
-    // These methods should be overrriden
-    virtual void init();
-    virtual bool check_frame(json raw_frame);
-    virtual void update(aiwc::game_frame frame);
-    virtual void finish();
-
     aiwc::game_info info;
+
+  protected:
+    void set_speeds(std::vector<double>& speeds);
+    void commentate(const std::string& comment);
+    void report(const std::vector<std::string>& rep);
 
   private:
     void send_to_server(std::string message, std::string arguments = "");
     json receive();
     void parse_game_info(json raw_info);
     aiwc::game_frame parse_frame(json raw_frame);
+    virtual bool check_frame(json raw_frame);
+
+    // These methods should be overrriden
+    virtual void init();
+    virtual void update(aiwc::game_frame frame);
+    virtual void finish();
 
     std::string key;
     std::string datapath;

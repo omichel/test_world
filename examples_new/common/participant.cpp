@@ -145,12 +145,20 @@ namespace aiwc {
     return frame;
   }
 
-  void Participant::set_speeds(std::vector<double> speeds) {
+  void Participant::set_speeds(std::vector<double>& speeds) {
     std::string arguments = "";
     for (unsigned i = 0; i < speeds.size(); i++)
       arguments += std::to_string(speeds[i]) + ", ";
     arguments = arguments.substr(0, arguments.size() - 2);
     send_to_server("set_speeds", arguments);
+  }
+
+  void Participant::commentate(const std::string& comment) {
+    send_to_server("commentate", "\"" + comment + "\"");
+  }
+
+  void Participant::report(const std::vector<std::string>& rep) {
+
   }
 
   bool Participant::check_frame(json raw_frame) {
