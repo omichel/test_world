@@ -2,10 +2,10 @@ CXX       := g++
 CXXFLAGS  := -pedantic-errors -Wall -std=c++14
 BUILD     := ./build
 OBJ_DIR   := $(BUILD)/objects
-TARGET    := general_image-fetch
-INCLUDE   := -I../common -I../../extlibs/cppcodec/include
-LIBRARIES := -lopencv_core -lopencv_highgui -lopencv_imgproc
-SRC       := general_image-fetch.cpp ../common/participant.cpp
+TARGET    := general_frame-skip
+INCLUDE   := -I../common
+LIBRARIES := -lpthread
+SRC       := general_frame-skip.cpp ../common/participant.cpp
 ifeq ($(OS),Windows_NT)
 # on Windows, need to link with WinSock2
 LIBRARIES += -lws2_32
