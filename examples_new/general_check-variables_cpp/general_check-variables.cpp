@@ -100,7 +100,7 @@ public:
     set_speeds(speeds);
   }
 
-  void finish() override {
+  void finish(aiwc::game_frame frame) override {
 
   }
 

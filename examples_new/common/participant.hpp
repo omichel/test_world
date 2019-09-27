@@ -133,7 +133,7 @@ namespace aiwc {
     // These methods should be overrriden
     virtual void init();
     virtual void update(aiwc::game_frame frame);
-    virtual void finish();
+    virtual void finish(aiwc::game_frame frame);
 
     std::string key;
     std::string datapath;

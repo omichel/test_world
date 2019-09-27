@@ -158,7 +158,9 @@ namespace aiwc {
   }
 
   void Participant::report(const std::vector<std::string>& rep) {
-
+    std::string report;
+    for (auto const& s : rep) { report += s; }
+    send_to_server("report", report);
   }
 
   bool Participant::check_frame(json raw_frame) {
@@ -172,7 +174,7 @@ namespace aiwc {
 
   void Participant::update(aiwc::game_frame frame) { std::cout << "update() method called..." << std::endl; }
 
-  void Participant::finish() { std::cout << "finish() method called..." << std::endl; }
+  void Participant::finish(aiwc::game_frame frame) { std::cout << "finish() method called..." << std::endl; }
 
   void Participant::run() {
     send_to_server("get_info");
@@ -187,18 +189,19 @@ namespace aiwc {
     while (true) {
       json raw_frame = receive();
       if (!raw_frame.empty()) {
+        // parse the received json into game_frame format
+        auto frame = parse_frame(raw_frame);
         if (check_frame(raw_frame)) { // return false if we need to quit
-          // parse the received json into game_frame format
-          auto frame = parse_frame(raw_frame);
           update(frame);
         }
-        else
+        else {
+          finish(frame);
           break;
+        }
       } else
         break;
     }
 
-    finish();
     return;
   }
 

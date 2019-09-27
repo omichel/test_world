@@ -64,7 +64,7 @@ public:
     std::cout << "Long operation ended." << std::endl;
   }
 
-  void finish() override {
+  void finish(aiwc::game_frame frame) override {
 
   }
 

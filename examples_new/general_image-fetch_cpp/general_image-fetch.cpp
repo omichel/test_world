@@ -63,7 +63,7 @@ public:
     }
   }
 
-  void finish() override {
+  void finish(aiwc::game_frame frame) override {
 
   }
 

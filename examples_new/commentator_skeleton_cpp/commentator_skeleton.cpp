@@ -65,7 +65,7 @@ public:
     // const auto& bteam0_active = frame.coordinates.robots[BTEAM][0].active;
   }
 
-  void finish() override {
+  void finish(aiwc::game_frame frame) override {
 
   }
 
