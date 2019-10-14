@@ -132,6 +132,7 @@ class GameSupervisor(Supervisor):
         Supervisor.__init__(self)
         self.basicTimeStep = int(self.getBasicTimeStep())
         self.timeStep = constants.PERIOD_MS
+        self.waitReady = 0
         self.report = None
 
         self.receiver = self.getReceiver(constants.NAME_RECV)
@@ -959,6 +960,11 @@ class GameSupervisor(Supervisor):
                 else:
                     if self.step(self.timeStep) == -1:
                         break
+                    else:
+                        self.waitReady += self.timeStep
+                        if (self.waitReady == constants.WAIT_READY_MS):
+                            print('Game could not be initiated. Need two players ready.')
+                            return
                 continue
 
             self.ball_position = self.get_ball_position()
