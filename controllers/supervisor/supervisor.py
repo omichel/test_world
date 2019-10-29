@@ -727,7 +727,7 @@ class GameSupervisor(Supervisor):
         if config['rule']:
             if config['rule']['game_time']:
                 self.game_time = config['rule']['game_time'] * 1000 / constants.PERIOD_MS * constants.PERIOD_MS
-            if config['rule']['deadlock']:
+            if not config['rule']['deadlock']:
                 deadlock_flag = config['rule']['deadlock']
         else:
             print('"rule" section of \'config.json\' seems to be missing: using default options\n')
