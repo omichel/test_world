@@ -284,6 +284,9 @@ Referee {
     DEF DEF_RECV Receiver {
       name "recv"
     }
+    DEF DEF_SPEAKER Speaker {
+      name "speaker"
+    }
     Transform {
       rotation 1 0 0 4.712389
       children [
