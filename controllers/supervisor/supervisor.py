@@ -462,7 +462,7 @@ class GameSupervisor(Supervisor):
                     if message[2 * id + team] == 1:
                         rc[team][id] = True
                     if rc[team][id]:
-                        self.sound_speaker(KICK_SOUND, 1)
+                        self.sound_speaker(constants.KICK_SOUND, 1)
             self.receiver.nextPacket()
         return rc
 
