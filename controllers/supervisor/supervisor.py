@@ -135,6 +135,9 @@ class GameSupervisor(Supervisor):
         self.waitReady = 0
         self.report = None
 
+        self.speaker = self.getSpeaker("speaker")
+        self.kick_sound_filter = 0
+
         self.receiver = self.getReceiver(constants.NAME_RECV)
         self.receiver.enable(constants.RECV_PERIOD_MS)
 
@@ -461,9 +464,8 @@ class GameSupervisor(Supervisor):
                 for id in range(constants.NUMBER_OF_ROBOTS):
                     if message[2 * id + team] == 1:
                         rc[team][id] = True
-                    if rc[team][id]:
-                        self.sound_speaker(constants.KICK_SOUND, 1)
             self.receiver.nextPacket()
+        self.kick_sound(rc)
         return rc
 
     def get_robot_posture(self, team, id):
@@ -721,16 +723,28 @@ class GameSupervisor(Supervisor):
                 if dist_sq < target_r * target_r:
                     return True
 
-    def sound_speaker(self, state, volume):
-        spk = self.getSpeaker("speaker")
+    def kick_sound(self, touch):
+        if sum(touch[0])+sum(touch[1]) != 0:
+            if self.time - self.kick_sound_filter >= 400:
+                self.kick_sound_filter = self.time
+                self.sound_speaker(constants.KICK_SOUND)
+
+    def sound_speaker(self, state):
         sounds = ["sounds/kick.wav",
                 "sounds/whistle.wav",
                 "sounds/whistle_long.wav",
                 "sounds/whistle_2.wav",
-                "sounds/whistle_3.wav"]
+                "sounds/whistle_3.wav",
+                "sounds/goal.wav"]
 
         # left, right, sound, volume, pitch, balance, loop
-        Speaker.playSound(spk, spk, sounds[state], volume, 1, 0, False)
+        Speaker.playSound(self.speaker, self.speaker, sounds[state], 1, 1, 0, False)
+
+    def background_music(self, play_stop):
+        if play_stop:
+            Speaker.playSound(self.speaker, self.speaker, "sounds/crowd.wav", 1, 1, 0, True)
+        else:
+            Speaker.stop(self.speaker, "sounds/crowd.wav")
 
     def run(self):
         config_file = open('../../config.json')
@@ -910,6 +924,7 @@ class GameSupervisor(Supervisor):
         self.time = 0
         self.kickoff_time = self.time
         self.score = [0, 0]
+        self.kick_sound_filter = 0
         self.half_passed = False
         self.reset_reason = Game.NONE
         self.game_state = Game.STATE_KICKOFF
@@ -970,7 +985,8 @@ class GameSupervisor(Supervisor):
                     self.publish_current_frame(Game.GAME_START)
                     if self.step(constants.WAIT_STABLE_MS) == -1:
                         break
-                    self.sound_speaker(constants.WHISTLE_LONG_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_LONG_SOUND)
+                    self.background_music(True)
                 else:
                     if self.step(self.timeStep) == -1:
                         break
@@ -984,10 +1000,12 @@ class GameSupervisor(Supervisor):
             self.ball_position = self.get_ball_position()
             if self.time >= self.game_time:  # half of game over
                 if self.half_passed:  # game over
-                    self.sound_speaker(constants.WHISTLE_3_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_3_SOUND)
+                    self.background_music(False)
                     if repeat:
                         self.publish_current_frame(Game.EPISODE_END)
                         self.reset_reason = Game.EPISODE_END
+                        self.kick_sound_filter = 0
                         self.episode_restart()
                         self.half_passed = False
                     else:
@@ -998,8 +1016,11 @@ class GameSupervisor(Supervisor):
                     self.tcp_server.spin(self)  # leave time to receive report
                     if not repeat:
                         return
+                    else:
+                        self.sound_speaker(constants.WHISTLE_LONG_SOUND)
+                        self.background_music(True)
                 else:  # second half starts with a kickoff by the blue team (1)
-                    self.sound_speaker(constants.WHISTLE_2_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_2_SOUND)
                     self.publish_current_frame(Game.HALFTIME)
                     self.stop_robots()
                     if self.step(constants.WAIT_END_MS) == -1:
@@ -1010,13 +1031,14 @@ class GameSupervisor(Supervisor):
                     self.game_state = Game.STATE_KICKOFF
                     self.time = 0
                     self.kickoff_time = self.time
+                    self.kick_sound_filter = 0 
                     self.reset(constants.FORMATION_DEFAULT, constants.FORMATION_KICKOFF)
                     self.lock_all_robots(True)
                     self.robot[constants.TEAM_BLUE][4]['active'] = True
                     if self.step(constants.WAIT_STABLE_MS) == -1:
                         break
                     self.publish_current_frame(Game.GAME_START)
-                    self.sound_speaker(constants.WHISTLE_LONG_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_LONG_SOUND)
                 continue
 
             self.publish_current_frame()
@@ -1116,7 +1138,8 @@ class GameSupervisor(Supervisor):
                     self.score[goaler] += 1
                     self.update_label()
                     self.stop_robots()
-                    self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                    self.sound_speaker(constants.GOAL_SOUND)
+                    self.sound_speaker(constants.WHISTLE_SOUND)
                     if self.step(constants.WAIT_GOAL_MS) == -1:
                         break
                     self.game_state = Game.STATE_KICKOFF
@@ -1130,10 +1153,10 @@ class GameSupervisor(Supervisor):
                     self.robot[self.ball_ownership][4]['active'] = True
                     if self.step(constants.WAIT_STABLE_MS) == -1:
                         break
-                    self.sound_speaker(constants.WHISTLE_LONG_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_LONG_SOUND)
                     self.reset_reason = constants.SCORE_RED_TEAM if ball_x > 0 else constants.SCORE_BLUE_TEAM
                 elif not self.ball_in_field():
-                    self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_SOUND)
                     self.stop_robots()
                     if self.step(constants.WAIT_STABLE_MS) == -1:
                         break
@@ -1189,7 +1212,7 @@ class GameSupervisor(Supervisor):
                             self.reset_reason = constants.CORNERKICK
                     if self.step(constants.WAIT_STABLE_MS) == -1:
                         break
-                    self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_SOUND)
 
                 # check if any of robots should return to the field
                 for team in constants.TEAMS:
@@ -1212,7 +1235,7 @@ class GameSupervisor(Supervisor):
                 ball_x = self.get_ball_position()[0]
                 if self.check_penalty_area():  # if the penalty area reset condition is met
                     # the ball ownership is already set by check_penalty_area()
-                    self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_SOUND)
                     self.stop_robots()
                     if self.step(constants.WAIT_STABLE_MS) == -1:
                         break
@@ -1249,14 +1272,14 @@ class GameSupervisor(Supervisor):
                         self.robot[self.ball_ownership][4]['active'] = True
                     if self.step(constants.WAIT_STABLE_MS) == -1:
                         break
-                    self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                    self.sound_speaker(constants.WHISTLE_SOUND)
 
                 if self.reset_reason == constants.NONE and deadlock_flag:
                     if self.get_ball_velocity() >= constants.DEADLOCK_THRESHOLD:
                         self.deadlock_time = self.time
 
                     elif self.time - self.deadlock_time >= constants.DEADLOCK_DURATION_MS:
-                        self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                        self.sound_speaker(constants.WHISTLE_SOUND)
                         # if the ball is not moved fast enough for constants.DEADLOCK_DURATION_MS
                         ball_x = self.get_ball_position()[0]
                         ball_y = self.get_ball_position()[1]
@@ -1301,7 +1324,7 @@ class GameSupervisor(Supervisor):
                                 if self.step(constants.WAIT_STABLE_MS) == -1:
                                     break
                                 self.deadlock_time = self.time
-                                self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                                self.sound_speaker(constants.WHISTLE_SOUND)
 
                             else:  # if the deadlock happened in the corner regions
                                 # set the ball ownership
@@ -1341,7 +1364,7 @@ class GameSupervisor(Supervisor):
                                     break
                                 self.reset_reason = constants.CORNERKICK
                                 self.deadlock_time = self.time
-                                self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                                self.sound_speaker(constants.WHISTLE_SOUND)
 
                         else:  # if the deadlock happened in the general region, relocate the ball and continue the game
                             self.stop_robots()
@@ -1363,7 +1386,7 @@ class GameSupervisor(Supervisor):
                                 break
                             self.reset_reason = constants.DEADLOCK
                             self.deadlock_time = self.time
-                            self.sound_speaker(constants.WHISTLE_SOUND, 1)
+                            self.sound_speaker(constants.WHISTLE_SOUND)
 
             elif self.game_state == Game.STATE_KICKOFF:
                 if self.time - self.kickoff_time >= constants.KICKOFF_TIME_LIMIT_MS:
