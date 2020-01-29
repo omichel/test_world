@@ -259,7 +259,10 @@ class GameSupervisor(Supervisor):
                 if role == constants.TEAM_RED:
                     self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_RED]))
                 elif role == constants.TEAM_BLUE:
-                    self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_BLUE]))        
+                    self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_BLUE]))
+                # commentator and reporter receive team red information
+                else:
+                    self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_RED]))        
             elif command.startswith('ready('):
                 self.ready[role] = True
                 if role == constants.TEAM_RED:
