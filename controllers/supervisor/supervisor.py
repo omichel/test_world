@@ -256,7 +256,13 @@ class GameSupervisor(Supervisor):
             self.role_client[role] = client
             if command.startswith('get_info('):
                 print('Server receive aiwc.get_info from ' + get_role_name(role))
-                self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_RED]))
+                if role == constants.TEAM_RED:
+                    self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_RED]))
+                elif role == constants.TEAM_BLUE:
+                    self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_BLUE]))
+                # commentator and reporter receive team red information
+                else:
+                    self.tcp_server.send(client, json.dumps(self.role_info[constants.TEAM_RED]))        
             elif command.startswith('ready('):
                 self.ready[role] = True
                 if role == constants.TEAM_RED:
