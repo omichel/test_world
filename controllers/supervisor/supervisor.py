@@ -1011,9 +1011,22 @@ class GameSupervisor(Supervisor):
                     if repeat:
                         self.publish_current_frame(Game.EPISODE_END)
                         self.reset_reason = Game.EPISODE_END
+                        self.stop_robots()
+                        if self.step(constants.WAIT_END_MS) == -1:
+                            break                     
                         self.kick_sound_filter = 0
                         self.episode_restart()
                         self.half_passed = False
+                        self.ball_ownership = constants.TEAM_RED
+                        self.game_state = Game.STATE_KICKOFF
+                        self.time = 0
+                        self.kickoff_time = self.time
+                        self.score = [0, 0]
+                        self.reset(constants.FORMATION_KICKOFF, constants.FORMATION_DEFAULT)
+                        self.lock_all_robots(True)
+                        self.robot[constants.TEAM_RED][4]['active'] = True
+                        if self.step(constants.WAIT_STABLE_MS) == -1:
+                            break
                     else:
                         self.publish_current_frame(Game.GAME_END)
                     self.stop_robots()
@@ -1133,6 +1146,7 @@ class GameSupervisor(Supervisor):
                     r = 1.5 * constants.ROBOT_SIZE[0]
                     # if any object is located within 1.5 * robot_size, the return is delayed
                     if not self.any_object_nearby(ix, iy, r):
+                        self.robot[team][0]['active'] = True 
                         self.return_to_field(team, 0)
                         self.robot[team][0]['ipa_time'] = self.time
 
