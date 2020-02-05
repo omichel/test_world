@@ -1116,7 +1116,7 @@ class GameSupervisor(Supervisor):
                             iy = sign * constants.ROBOT_FORMATION[constants.FORMATION_DEFAULT][id][1]
                             r = 1.5 * constants.ROBOT_SIZE[id]
                             # if any object is located within 1.5 * robot_size, the relocation is delayed
-                            if not self.any_object_nearby(ix, iy, r):
+                            if not self.any_object_nearby(ix, iy, r):                              
                                 self.return_to_field(team, id)
                                 self.robot[team][id]['niopa_time'] = self.time
                     else:
@@ -1146,6 +1146,7 @@ class GameSupervisor(Supervisor):
                     r = 1.5 * constants.ROBOT_SIZE[0]
                     # if any object is located within 1.5 * robot_size, the return is delayed
                     if not self.any_object_nearby(ix, iy, r):
+                        self.robot[team][0]['active'] = True 
                         self.return_to_field(team, 0)
                         self.robot[team][0]['ipa_time'] = self.time
 
