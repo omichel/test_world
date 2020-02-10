@@ -1034,7 +1034,7 @@ class GameSupervisor(Supervisor):
                         break
                     self.tcp_server.spin(self)  # leave time to receive report
                     if not repeat:
-                        return
+                        break
                     else:
                         self.sound_speaker(constants.WHISTLE_LONG_SOUND)
                         self.background_music(True)
