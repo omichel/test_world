@@ -548,6 +548,110 @@ class GameSupervisor(Supervisor):
         robot.getField('rwRotation').setSFRotation(wheelRotation)
         robot.resetPhysics()
 
+    def rewind_robots(self):
+        for i in range(self.replay_length):
+            robot_data = self.replayBuffer[i][0]
+            for team in constants.TEAMS:
+                for id in range(constants.NUMBER_OF_ROBOTS):
+                    robot = self.robot[team][id]['node']
+                    translation = robot_data[team][id]['translation']
+                    rotation = robot_data[team][id]['rotation']
+                    custom_data = robot_data[team][id]['customData']
+                    lwTranslation = robot_data[team][id]['lwTranslation']
+                    lwRotation = robot_data[team][id]['lwRotation']
+                    rwTranslation = robot_data[team][id]['rwTranslation']
+                    rwRotation = robot_data[team][id]['rwRotation']
+                    velocity = robot_data[team][id]['velocity']
+                    robot.getField('translation').setSFVec3f(translation)
+                    robot.getField('rotation').setSFRotation(rotation)
+                    robot.getField('customData').setSFString(custom_data)
+                    robot.getField('lwTranslation').setSFVec3f(lwTranslation)
+                    robot.getField('lwRotation').setSFRotation(lwRotation)
+                    robot.getField('rwTranslation').setSFVec3f(rwTranslation)
+                    robot.getField('rwRotation').setSFRotation(rwRotation)
+                    robot.setVelocity(velocity)
+                    robot.resetPhysics()
+
+            ball_data = self.replayBuffer[i][1]
+            translation = ball_data['translation']
+            rotation = ball_data['rotation']
+            velocity = ball_data['velocity']
+            ball = self.ball
+            ball.getField('translation').setSFVec3f(translation)
+            ball.getField('rotation').setSFRotation(rotation)
+            ball.setVelocity(velocity)
+            ball.resetPhysics()
+
+            if self.step(self.timeStep) == -1:
+                break
+
+    def update_replayBuffer(self):
+        robot_data = [[0 for x in range(constants.NUMBER_OF_ROBOTS)] for y in range(2)]
+        ball_data = {}
+        for team in constants.TEAMS:
+            for id in range(constants.NUMBER_OF_ROBOTS):
+                robot = self.robot[team][id]['node']
+                ball = self.ball         
+                robot_data[team][id] = {}
+                robot_data[team][id]['translation'] = robot.getField('translation').getSFVec3f()
+                robot_data[team][id]['rotation'] = robot.getField('rotation').getSFRotation()
+                robot_data[team][id]['customData'] = robot.getField('customData').getSFString()
+                robot_data[team][id]['lwTranslation'] = robot.getField('lwTranslation').getSFVec3f()
+                robot_data[team][id]['lwRotation'] = robot.getField('lwRotation').getSFRotation()
+                robot_data[team][id]['rwTranslation'] = robot.getField('rwTranslation').getSFVec3f()
+                robot_data[team][id]['rwRotation'] = robot.getField('rwRotation').getSFRotation()
+                robot_data[team][id]['velocity'] = robot.getVelocity()
+        ball_data['translation'] = ball.getField('translation').getSFVec3f()
+        ball_data['rotation'] = ball.getField('rotation').getSFRotation()
+        ball_data['velocity'] = ball.getVelocity()
+
+        self.replayBuffer.append([robot_data, ball_data])
+
+    def init_replayBuffer(self):
+        for i in range(self.replay_length):
+            robot_data = [[0 for x in range(constants.NUMBER_OF_ROBOTS)] for y in range(2)]
+            for team in constants.TEAMS:
+                for id in range(constants.NUMBER_OF_ROBOTS):
+                    robot = self.robot[team][id]['node']         
+                    f = 1 # default line: f = -1 if self.half_passed else 1
+                    s = 1 if team == 0 else -1
+                    translation = [f * constants.ROBOT_FORMATION[constants.FORMATION_DEFAULT][id][0] * s,
+                                constants.ROBOT_HEIGHT[id] / 2,
+                                f * -constants.ROBOT_FORMATION[constants.FORMATION_DEFAULT][id][1] * s]
+                    angle = 0 # default line: constants.PI if self.half_passed else 0
+                    angle += constants.ROBOT_FORMATION[constants.FORMATION_DEFAULT][id][2]
+                    angle += 0 if team == 0 else constants.PI
+                    angle -= constants.PI / 2
+                    rotation = [0, 1, 0, angle]
+                    al = robot.getField('axleLength').getSFFloat()
+                    h = robot.getField('height').getSFFloat()
+                    wr = robot.getField('wheelRadius').getSFFloat()
+                    lwTranslation = [-al / 2, (-h + 2 * wr) / 2, 0]
+                    rwTranslation = [al / 2, (-h + 2 * wr) / 2, 0]
+                    wheelRotation = [1, 0, 0, constants.PI / 2]
+                    robot_data[team][id] = {}
+                    robot_data[team][id]['translation'] = translation
+                    robot_data[team][id]['rotation'] = rotation
+                    robot_data[team][id]['customData'] = '0 0'
+                    robot_data[team][id]['lwTranslation'] = lwTranslation
+                    robot_data[team][id]['lwRotation'] = wheelRotation
+                    robot_data[team][id]['rwTranslation'] = rwTranslation
+                    robot_data[team][id]['rwRotation'] = wheelRotation
+                    robot_data[team][id]['velocity'] = robot.getVelocity()
+
+            ball = self.ball
+            x = constants.BALL_POSTURE[0][0]
+            z = constants.BALL_POSTURE[0][1]
+            f = 1 # default line: -1 if self.half_passed else 1
+            translation = [f * x, 0.2, f * -z]
+            rotation = [0, 1, 0, 0]
+            ball_data = {}
+            ball_data['translation'] = translation
+            ball_data['rotation'] = rotation
+            ball_data['velocity'] = ball.getVelocity()
+
+            self.replayBuffer.append([robot_data, ball_data])
+
     def relocate_ball(self, pos):
         node = self.ball
         x = constants.BALL_POSTURE[pos][0]
@@ -775,6 +879,7 @@ class GameSupervisor(Supervisor):
         repeat = False
         record = False
         record_path = ''
+        replay = False
         if config['tool']:
             if config['tool']['repeat']:
                 repeat = config['tool']['repeat']
@@ -784,6 +889,8 @@ class GameSupervisor(Supervisor):
                 record = config['tool']['record']
             if config['tool']['record_path']:
                 record_path = config['tool']['record_path']
+            if config['tool']['replay']:
+                replay = config['tool']['replay']
 
         path_prefix = '../../'
         team_name = {}
@@ -949,6 +1056,13 @@ class GameSupervisor(Supervisor):
         self.lock_all_robots(True)
         self.robot[constants.TEAM_RED][4]['active'] = True
 
+        if replay:
+            # replay buffer
+            self.replay_length = int(constants.REPLAY_THRESHOLD / constants.PERIOD_MS)
+            self.replayBuffer = collections.deque(maxlen=self.replay_length)
+            # initiate replayBuffer used to replay score situations
+            self.init_replayBuffer()
+
         # start participants
         for player_info in player_infos:
             exe = player_info['exe']
@@ -1063,6 +1177,10 @@ class GameSupervisor(Supervisor):
             self.publish_current_frame()
             self.reset_reason = Game.NONE
 
+            if replay:
+                # update robot data
+                self.update_replayBuffer()
+
             # update touch statuses of robots
             touch = self.get_robot_touch_ball()
             for team in constants.TEAMS:
@@ -1160,8 +1278,15 @@ class GameSupervisor(Supervisor):
                     self.stop_robots()
                     self.sound_speaker(constants.GOAL_SOUND)
                     self.sound_speaker(constants.WHISTLE_SOUND)
-                    if self.step(constants.WAIT_GOAL_MS) == -1:
-                        break
+                    for i in range(0, constants.WAIT_GOAL_MS, self.timeStep):
+                        if self.step(self.timeStep) == -1:
+                            break
+                        if replay:
+                            # update robot data (after a goal is scored)
+                            self.update_replayBuffer()
+                    if replay:
+                        # replay loop
+                        self.rewind_robots()
                     self.game_state = Game.STATE_KICKOFF
                     self.ball_ownership = constants.TEAM_BLUE if ball_x > 0 else constants.TEAM_RED
                     self.kickoff_time = self.time
