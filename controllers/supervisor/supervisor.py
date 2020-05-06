@@ -419,7 +419,10 @@ class GameSupervisor(Supervisor):
                 pos = self.get_robot_posture(c, id)
                 frame['coordinates'][t][id][0] = pos[0] if team == constants.TEAM_RED else -pos[0]
                 frame['coordinates'][t][id][1] = pos[1] if team == constants.TEAM_RED else -pos[1]
-                frame['coordinates'][t][id][2] = pos[2] if team == constants.TEAM_RED else pos[2] + constants.PI
+                if team == constants.TEAM_RED:
+                    frame['coordinates'][t][id][2] = pos[2]
+                else:
+                    frame['coordinates'][t][id][2] = pos[2] + constants.PI if pos[2] < 0 else pos[2] - constants.PI
                 frame['coordinates'][t][id][3] = self.robot[c][id]['active']
                 frame['coordinates'][t][id][4] = self.robot[c][id]['touch']
         frame['coordinates'][2] = [None] * 2
