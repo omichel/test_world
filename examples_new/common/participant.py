@@ -97,15 +97,6 @@ class Participant():
             frame.half_passed = f['half_passed']
         if 'subimages' in f:
             frame.subimages = f['subimages']
-            # TODO
-            # Comment the next lines if you don't need to use the image information
-            # for s in frame.subimages:
-            #    received_subimages.append(SubImage(s['x'],
-            #                                       s['y'],
-            #                                       s['w'],
-            #                                       s['h'],
-            #                                       s['base64'].encode('utf8')))
-            # self.image.update_image(received_subimages)
         if 'coordinates' in f:
             frame.coordinates = f['coordinates']
         if 'EOF' in f:

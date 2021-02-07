@@ -2,10 +2,10 @@ CXX       := g++
 CXXFLAGS  := -pedantic-errors -Wall -std=c++14
 BUILD     := ./build
 OBJ_DIR   := $(BUILD)/objects
-TARGET    := player_random-walk
+TARGET    := general_frame-skip
 INCLUDE   := -I../common
-LIBRARIES :=
-SRC       := player_random-walk.cpp ../common/participant.cpp
+LIBRARIES := -lpthread
+SRC       := general_frame-skip.cpp ../common/participant.cpp
 ifeq ($(OS),Windows_NT)
 # on Windows, need to link with WinSock2
 LIBRARIES += -lws2_32

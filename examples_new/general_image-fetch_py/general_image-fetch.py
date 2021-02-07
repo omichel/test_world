@@ -5,40 +5,48 @@
 
 import base64
 import numpy as np
+
 import cv2
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
-    from participant import Participant
+    from participant import Participant, Game, Frame
 except ImportError as err:
     print('general_image-fetch: \'participant\' module cannot be imported:', err)
     raise
 
-
 class ImageFetch(Participant):
     def init(self, info):
-        self.cameraResolution = info['resolution']
-        self.ImageBuffer = np.zeros((self.cameraResolution[1], self.cameraResolution[0], 3), dtype=np.uint8)
+        self.resolution = info['resolution']
+        self.image_buffer = np.zeros((self.resolution[1], self.resolution[0], 3), dtype=np.uint8)
 
-    def update(self, frame):
-        for subimage in frame.subimages:
+    def update_image_buffer(self, subimages):
+        for subimage in subimages:
             x = subimage[0]
             y = subimage[1]
             w = subimage[2]
             h = subimage[3]
-            decoded = np.fromstring(base64.b64decode(subimage[4]), dtype=np.uint8)  # convert byte array to numpy array
+            decoded = np.fromstring(base64.b64decode(subimage[4]), dtype=np.uint8) # convert byte array to numpy array
             image = decoded.reshape((h, w, 4))
             for j in range(h):
                 for k in range(w):
-                    self.ImageBuffer[j + y, k + x, 0] = image[j, k, 0]  # red channel
-                    self.ImageBuffer[j + y, k + x, 1] = image[j, k, 1]  # green channel
-                    self.ImageBuffer[j + y, k + x, 2] = image[j, k, 2]  # blue channel
-        # Display the image
-        cv2.imshow("image", self.ImageBuffer / 255.0)
+                    self.image_buffer[j + y, k + x, 0] = image[j, k, 0] # blue channel
+                    self.image_buffer[j + y, k + x, 1] = image[j, k, 1] # green channel
+                    self.image_buffer[j + y, k + x, 2] = image[j, k, 2] # red channel
+
+    def update(self, frame):
+        self.update_image_buffer(frame.subimages)
+
+        # display the received image
+        cv2.imshow('image', self.image_buffer / 255.0)
         cv2.waitKey(1)
+
+    def finish(self, frame):
+        # save your data if necessary before the program terminates
+        print("finish() method called")
 
 
 if __name__ == '__main__':
-    player = ImageFetch()
-    player.run()
+    participant = ImageFetch()
+    participant.run()

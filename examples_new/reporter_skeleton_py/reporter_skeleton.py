@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Author(s): Luiz Felipe Vecchietti, Chansol Hong, Inbae Jeong
 # Maintainer: Chansol Hong (cshong@rit.kaist.ac.kr)
@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../common')
 try:
-    from participant import Participant
+    from participant import Participant, Game, Frame
 except ImportError as err:
     print('reporter_skeleton: \'participant\' module cannot be imported:', err)
     raise
@@ -46,10 +46,7 @@ class Reporter(Participant):
         # self.max_torque = info['max_torque']
         # self.codewords = info['codewords']
 
-        self.colorChannels = 3
         self.end_of_frame = False
-        # TODO
-        # self.image = ReceivedImage(self.resolution, self.colorChannels)
 
         self.paragraphs = []
         self.printConsole("I am the reporter for this game!")
@@ -62,19 +59,19 @@ class Reporter(Participant):
         pass
 
     def finish(self, frame):
-        scoreRed = frame.score[0]
-        scoreBlue = frame.score[1]
-        if (scoreRed > scoreBlue):
-            self.paragraphs.append("Team Red won the game with score {} : {}".format(scoreRed, scoreBlue))
-        elif (scoreRed < scoreBlue):
-            self.paragraphs.append("Team Blue won the game with score {} : {}".format(scoreBlue, scoreRed))
+        score_red = frame.score[0]
+        score_blue = frame.score[1]
+        if (score_red > score_blue):
+            self.paragraphs.append("Team Red won the game with score {} : {}".format(score_red, score_blue))
+        elif (score_red < score_blue):
+            self.paragraphs.append("Team Blue won the game with score {} : {}".format(score_blue, score_red))
         else:
-            self.paragraphs.append("The game ended in a tie with score {} : {}".format(scoreRed, scoreBlue))
+            self.paragraphs.append("The game ended in a tie with score {} : {}".format(score_red, score_blue))
 
         self.paragraphs.append("It was really a great match!")
         self.send_report(self.paragraphs)
 
 
 if __name__ == '__main__':
-    commentator = Reporter()
-    commentator.run()
+    reporter = Reporter()
+    reporter.run()
